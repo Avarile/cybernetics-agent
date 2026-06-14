@@ -3,7 +3,7 @@
 Skills Hub CLI — Unified interface for the Hermes Skills Hub.
 
 Powers both:
-  - `hermes skills <subcommand>` (CLI argparse entry point)
+  - `cybernetics skills <subcommand>` (CLI argparse entry point)
   - `/skills <subcommand>` (slash command in the interactive chat)
 
 All logic lives in shared do_* functions. The CLI entry point and slash command
@@ -59,7 +59,7 @@ def _resolve_short_name(name: str, sources, console: Console) -> str:
         table.add_column("Source", style="dim")
         table.add_column("Trust", style="dim")
         # overflow="fold" keeps the full slug visible (wraps instead of ellipsis-truncating)
-        # so users can copy it for `hermes skills install`.
+        # so users can copy it for `cybernetics skills install`.
         table.add_column("Identifier", style="bold cyan", overflow="fold", no_wrap=False)
         for r in exact:
             trust_style = {"builtin": "bright_cyan", "trusted": "green", "community": "yellow"}.get(r.trust_level, "dim")
@@ -294,7 +294,7 @@ def do_search(query: str, source: str = "all", limit: int = 10,
     # overflow="fold" keeps the full slug visible (wraps instead of
     # ellipsis-truncating). Browse.sh slugs end in a `-XXXXXX` hash that
     # is part of the actual identifier — truncating it makes copy-paste
-    # into `hermes skills install` fail.
+    # into `cybernetics skills install` fail.
     table.add_column("Identifier", style="dim", overflow="fold", no_wrap=False)
 
     for r in results:
@@ -309,8 +309,8 @@ def do_search(query: str, source: str = "all", limit: int = 10,
         )
 
     c.print(table)
-    c.print("[dim]Use: hermes skills inspect <identifier> to preview, "
-            "hermes skills install <identifier> to install "
+    c.print("[dim]Use: cybernetics skills inspect <identifier> to preview, "
+            "cybernetics skills install <identifier> to install "
             "(--json for scripting)[/]\n")
 
 
@@ -426,7 +426,7 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
     table.add_column("Description", max_width=44)
     table.add_column("Source", style="dim", width=12)
     table.add_column("Trust", width=10)
-    # The identifier is what you pass to `hermes skills install`. Browse used
+    # The identifier is what you pass to `cybernetics skills install`. Browse used
     # to omit it entirely, so users couldn't act on what they saw without a
     # second `search`. overflow="fold" keeps long slugs copy-pasteable.
     table.add_column("Identifier", style="dim", overflow="fold", no_wrap=False)
@@ -470,9 +470,9 @@ def do_browse(page: int = 1, page_size: int = 20, source: str = "all",
         c.print(f"  [yellow]⚡ Slow sources skipped: {', '.join(timed_out)} "
                 f"— run again for cached results[/]")
 
-    c.print("[dim]Tip: 'hermes skills inspect <identifier>' to preview, "
-            "'hermes skills install <identifier>' to install, "
-            "'hermes skills search <query>' to search deeper[/]\n")
+    c.print("[dim]Tip: 'cybernetics skills inspect <identifier>' to preview, "
+            "'cybernetics skills install <identifier>' to install, "
+            "'cybernetics skills search <query>' to search deeper[/]\n")
 
 
 def do_install(identifier: str, category: str = "", force: bool = False,
@@ -557,7 +557,7 @@ def do_install(identifier: str, category: str = "", force: bool = False,
                 "and the URL path doesn't produce a valid identifier.[/]\n\n"
                 "Retry with an explicit name:\n"
                 f"  [bold]/skills install {url} --name <your-name>[/]\n"
-                f"  [bold]hermes skills install {url} --name <your-name>[/]\n\n"
+                f"  [bold]cybernetics skills install {url} --name <your-name>[/]\n\n"
                 "[dim]Or ask the SKILL.md's author to add a `name:` field to "
                 "its YAML frontmatter.[/]\n"
             )
@@ -727,7 +727,7 @@ def do_install(identifier: str, category: str = "", force: bool = False,
                 )
                 c.print(
                     "[dim]You can still schedule it any time by asking the agent "
-                    "or via[/] [bold]hermes cron add[/][dim].[/]\n"
+                    "or via[/] [bold]cybernetics cron add[/][dim].[/]\n"
                 )
     except Exception:  # pragma: no cover - blueprint detection is best-effort
         pass
@@ -789,7 +789,7 @@ def do_inspect(identifier: str, console: Optional[Console] = None) -> None:
         preview = "\n".join(lines[:50])
         if len(lines) > 50:
             preview += f"\n\n... ({len(lines) - 50} more lines)"
-        c.print(Panel(preview, title="SKILL.md Preview", subtitle="hermes skills install <id> to install"))
+        c.print(Panel(preview, title="SKILL.md Preview", subtitle="cybernetics skills install <id> to install"))
 
     c.print()
 
@@ -891,7 +891,7 @@ def do_list(source_filter: str = "all",
         enabled_only: If True, hide disabled skills from the output.
 
     Enabled/disabled state is resolved against the currently active profile's
-    config — ``hermes -p <profile> skills list`` reads that profile's
+    config — ``cybernetics -p <profile> skills list`` reads that profile's
     ``skills.disabled`` list because ``-p`` swaps ``HERMES_HOME`` at process
     start.  No explicit profile flag needed here.
     """
@@ -1225,7 +1225,7 @@ def do_opt_in(sync: bool = False,
     """Remove the opt-out marker so bundled-skill seeding resumes.
 
     With ``sync``, immediately re-seed bundled skills instead of waiting for
-    the next ``hermes update``.
+    the next ``cybernetics update``.
     """
     from tools.skills_sync import set_bundled_skills_opt_out, sync_skills
 
@@ -1315,7 +1315,7 @@ def do_tap(action: str, repo: str = "", console: Optional[Console] = None) -> No
 
     elif action == "add":
         if not repo:
-            c.print("[bold red]Error:[/] Repo required. Usage: hermes skills tap add owner/repo\n")
+            c.print("[bold red]Error:[/] Repo required. Usage: cybernetics skills tap add owner/repo\n")
             return
         if mgr.add(repo):
             c.print(f"[bold green]Added tap:[/] {repo}\n")
@@ -1324,7 +1324,7 @@ def do_tap(action: str, repo: str = "", console: Optional[Console] = None) -> No
 
     elif action == "remove":
         if not repo:
-            c.print("[bold red]Error:[/] Repo required. Usage: hermes skills tap remove owner/repo\n")
+            c.print("[bold red]Error:[/] Repo required. Usage: cybernetics skills tap remove owner/repo\n")
             return
         if mgr.remove(repo):
             c.print(f"[bold green]Removed tap:[/] {repo}\n")
@@ -1381,7 +1381,7 @@ def do_publish(skill_path: str, target: str = "github", repo: str = "",
     if target == "github":
         if not repo:
             c.print("[bold red]Error:[/] --repo required for GitHub publish.\n"
-                    "Usage: hermes skills publish <path> --to github --repo owner/repo\n")
+                    "Usage: cybernetics skills publish <path> --to github --repo owner/repo\n")
             return
 
         auth = GitHubAuth()
@@ -1593,7 +1593,7 @@ def do_snapshot_import(input_path: str, force: bool = False,
 # ---------------------------------------------------------------------------
 
 def skills_command(args) -> None:
-    """Router for `hermes skills <subcommand>` — called from hermes_cli/main.py."""
+    """Router for `cybernetics skills <subcommand>` — called from hermes_cli/main.py."""
     action = getattr(args, "skills_action", None)
 
     if action == "browse":
@@ -1645,17 +1645,17 @@ def skills_command(args) -> None:
         elif snap_action == "import":
             do_snapshot_import(args.input, force=getattr(args, "force", False))
         else:
-            _console.print("Usage: hermes skills snapshot [export|import]\n")
+            _console.print("Usage: cybernetics skills snapshot [export|import]\n")
     elif action == "tap":
         tap_action = getattr(args, "tap_action", None)
         repo = getattr(args, "repo", "") or getattr(args, "name", "")
         if not tap_action:
-            _console.print("Usage: hermes skills tap [list|add|remove]\n")
+            _console.print("Usage: cybernetics skills tap [list|add|remove]\n")
             return
         do_tap(tap_action, repo=repo)
     else:
-        _console.print("Usage: hermes skills [browse|search|install|inspect|list|check|update|audit|uninstall|reset|opt-out|opt-in|publish|snapshot|tap]\n")
-        _console.print("Run 'hermes skills <command> --help' for details.\n")
+        _console.print("Usage: cybernetics skills [browse|search|install|inspect|list|check|update|audit|uninstall|reset|opt-out|opt-in|publish|snapshot|tap]\n")
+        _console.print("Run 'cybernetics skills <command> --help' for details.\n")
 
 
 # ---------------------------------------------------------------------------

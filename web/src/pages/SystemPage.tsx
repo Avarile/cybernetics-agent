@@ -515,11 +515,11 @@ export default function SystemPage() {
         open={updateConfirmOpen}
         onCancel={() => setUpdateConfirmOpen(false)}
         onConfirm={() => void applyUpdate()}
-        title="Update Hermes?"
+        title="Update Cybernetics?"
         description={
           updateInfo && updateInfo.behind && updateInfo.behind > 0
-            ? `This will run 'hermes update' (${updateInfo.update_command}) and pull ${updateInfo.behind} new commit${updateInfo.behind === 1 ? "" : "s"}. The gateway restarts when the update finishes; the current session keeps its prompt cache until then.`
-            : `This will run 'hermes update' (${updateInfo?.update_command ?? "hermes update"}) and restart the gateway when it finishes.`
+            ? `This will run 'cybernetics update' (${updateInfo.update_command}) and pull ${updateInfo.behind} new commit${updateInfo.behind === 1 ? "" : "s"}. The gateway restarts when the update finishes; the current session keeps its prompt cache until then.`
+            : `This will run 'cybernetics update' (${updateInfo?.update_command ?? "cybernetics update"}) and restart the gateway when it finishes.`
         }
         confirmLabel="Update now"
       />
@@ -688,7 +688,7 @@ export default function SystemPage() {
                 <div>{stats?.python_impl} {stats?.python_version}</div>
               </div>
               <div>
-                <div className="text-xs uppercase tracking-wider text-muted-foreground">Hermes</div>
+                <div className="text-xs uppercase tracking-wider text-muted-foreground">Cybernetics</div>
                 <div className="flex items-center gap-2">
                   <span>v{stats?.hermes_version}</span>
                   {updateInfo &&
@@ -834,7 +834,7 @@ export default function SystemPage() {
             )}
             {!portal?.logged_in && (
               <p className="text-xs text-muted-foreground">
-                Log in with <span className="font-mono">hermes portal</span>.
+                Log in with <span className="font-mono">cybernetics portal</span>.
               </p>
             )}
           </CardContent>
@@ -942,7 +942,7 @@ export default function SystemPage() {
               </Link>
               <span className="ml-auto">
                 New credentials:{" "}
-                <span className="font-mono">hermes memory setup</span>
+                <span className="font-mono">cybernetics memory setup</span>
               </span>
             </div>
 
@@ -1064,7 +1064,7 @@ export default function SystemPage() {
                   <span className="text-sm font-medium">Share debug report</span>
                   <span className="text-xs text-muted-foreground max-w-prose">
                     Uploads system info + logs to a public paste service and
-                    returns links to send the Hermes team. Pastes auto-delete
+                    returns links to send the Cybernetics team. Pastes auto-delete
                     after 6 hours.
                   </span>
                 </div>
@@ -1178,7 +1178,7 @@ export default function SystemPage() {
           <CardContent className="flex flex-col gap-3 py-4 sm:flex-row sm:items-end">
             <div className="grid gap-2 flex-1">
               <Label htmlFor="import-path">Restore from backup archive</Label>
-              <Input id="import-path" value={importPath} onChange={(e) => setImportPath(e.target.value)} placeholder="/path/to/hermes-backup.zip" />
+              <Input id="import-path" value={importPath} onChange={(e) => setImportPath(e.target.value)} placeholder="/path/to/cybernetics-backup.zip" />
             </div>
             <Button
               size="sm"
@@ -1194,7 +1194,7 @@ export default function SystemPage() {
             <ConfirmDialog
               open={importConfirmOpen}
               title="Restore from backup?"
-              description={`This will overwrite your current Hermes configuration, skills, sessions, and data with the contents of ${importPath.trim() || "the archive"}. This cannot be undone.`}
+              description={`This will overwrite your current Cybernetics configuration, skills, sessions, and data with the contents of ${importPath.trim() || "the archive"}. This cannot be undone.`}
               destructive
               confirmLabel="Restore"
               cancelLabel="Cancel"

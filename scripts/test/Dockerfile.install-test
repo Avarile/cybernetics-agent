@@ -1,0 +1,42 @@
+# ============================================================================
+# Hermetic test image for the Cybernetics installer.
+# ============================================================================
+# Goal: a fresh, throwaway Ubuntu environment that mirrors what a real end-user
+# sees on `curl ... | bash`. No host-machine pollution, identical every run.
+#
+# Used by scripts/test/test-installers.sh.
+# ============================================================================
+FROM ubuntu:22.04
+
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8 \
+    LC_ALL=C.UTF-8 \
+    TZ=UTC
+
+# Minimum host tooling: curl/git for the installer to fetch deps,
+# ca-certificates for HTTPS, sudo so we can both test as root and as a
+# normal user via `su tester -c ...`, and locales because uv may complain.
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        curl \
+        ca-certificates \
+        git \
+        sudo \
+        locales \
+        bash \
+        procps \
+        xz-utils \
+        build-essential \
+    && rm -rf /var/lib/apt/lists/* \
+    && locale-gen en_US.UTF-8
+
+# Non-root user mirrors typical end-user install path (~/.local/bin).
+RUN useradd -m -s /bin/bash tester && \
+    echo "tester ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/tester
+
+USER tester
+WORKDIR /home/tester
+ENV HOME=/home/tester \
+    PATH=/home/tester/.local/bin:/home/tester/.cargo/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+# Default: interactive shell, so `docker run -it ... bash` lands in a usable env.
+CMD ["/bin/bash"]

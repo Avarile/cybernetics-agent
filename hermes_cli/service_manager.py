@@ -12,7 +12,7 @@ the existing module-level functions in hermes_cli.gateway and
 hermes_cli.gateway_windows directly. This protocol is a thin facade
 used by new code that needs to be backend-agnostic — specifically the
 profile create/delete hooks (Phase 4) and the s6 dispatch path in
-``hermes gateway start/stop/restart`` when running inside a container.
+``cybernetics gateway start/stop/restart`` when running inside a container.
 """
 from __future__ import annotations
 
@@ -95,7 +95,7 @@ def detect_service_manager() -> ServiceManagerKind:
     This function does NOT replace ``supports_systemd_services()`` —
     host call sites continue to use that. It exists for new backend-
     agnostic code (profile create/delete hooks, the s6 dispatch path
-    in ``hermes gateway start/stop/restart``).
+    in ``cybernetics gateway start/stop/restart``).
     """
     # Imports deferred so importing this module doesn't drag in the
     # whole gateway dependency graph for callers that only need the
@@ -127,7 +127,7 @@ def _s6_running() -> bool:
     ``/proc/1/exe`` is unreadable and ``resolve()`` silently returns the
     path unchanged, so the resolved name is the literal ``"exe"`` and
     detection always fails. Since every Hermes runtime call inside the
-    container drops to hermes via ``s6-setuidgid``, that silent failure
+    container drops to cybernetics via ``s6-setuidgid``, that silent failure
     made the entire service-manager runtime-registration path inert in
     production (PR #30136 review).
 
@@ -158,7 +158,7 @@ def _s6_running() -> bool:
 # in ``hermes_cli.gateway`` (systemd/launchd) and ``hermes_cli.gateway_windows``
 # (Windows Scheduled Tasks). The protocol's ``name`` parameter is currently
 # unused for host backends — they operate on whichever profile is currently
-# active (set via the ``hermes -p <profile>`` flag before the call). This
+# active (set via the ``cybernetics -p <profile>`` flag before the call). This
 # matches existing host-side semantics; the parameter shape is designed
 # for s6 where each profile maps to a distinct service directory.
 # ---------------------------------------------------------------------------
@@ -312,7 +312,7 @@ def get_service_manager() -> ServiceManager:
 # ---------------------------------------------------------------------------
 # S6ServiceManager (container-only)
 #
-# Per-profile gateways are registered dynamically when `hermes profile create`
+# Per-profile gateways are registered dynamically when `cybernetics profile create`
 # runs inside the container (Phase 4). Static services (main-hermes, dashboard)
 # live in /etc/s6-overlay/s6-rc.d/ and are NOT managed by this class — they're
 # part of the image, not runtime-created.
@@ -350,7 +350,7 @@ _HERMES_GID = 10000
 
 def _seed_supervise_skeleton(svc_dir: Path) -> None:
     """Pre-create the ``supervise/`` and top-level ``event/`` skeleton
-    inside a service directory, owned by the hermes user.
+    inside a service directory, owned by the cybernetics user.
 
     Why this exists
     ---------------
@@ -366,7 +366,7 @@ def _seed_supervise_skeleton(svc_dir: Path) -> None:
     The PR #30136 review surfaced this as a real product gap: the
     entire S6ServiceManager lifecycle (``register/start/stop/unregister
     _profile_gateway``) was inert in production because every operation
-    is dispatched as the hermes user.
+    is dispatched as the cybernetics user.
 
     Why this works
     --------------
@@ -376,7 +376,7 @@ def _seed_supervise_skeleton(svc_dir: Path) -> None:
     chown/chmod fix-up that would normally make event/ ``03730
     root:root`` is **skipped** entirely — s6-supervise just opens the
     pre-existing FIFOs and proceeds. So if we lay the skeleton down
-    with hermes ownership before triggering ``s6-svscanctl -a``,
+    with cybernetics ownership before triggering ``s6-svscanctl -a``,
     s6-supervise inherits our layout and never touches it.
 
     Layout produced
@@ -390,7 +390,7 @@ def _seed_supervise_skeleton(svc_dir: Path) -> None:
     The ``death_tally``, ``lock``, and ``status`` regular files end up
     written by s6-supervise itself (as root), but those land mode 0644 —
     world-readable — and ``s6-svstat`` only needs read access, so the
-    hermes user reads them fine.
+    cybernetics user reads them fine.
 
     If ``svc_dir/log/`` is present (the canonical s6 logger pattern —
     one s6-supervise instance per service, plus a second for its
@@ -426,7 +426,7 @@ def _seed_supervise_skeleton(svc_dir: Path) -> None:
         try:
             os.chown(path, _HERMES_UID, _HERMES_GID)
         except PermissionError:
-            # Running as the hermes user already — directory is hermes-
+            # Running as the cybernetics user already — directory is hermes-
             # owned by default. The chown is a no-op in that case, so
             # swallowing this keeps both root and unprivileged callers
             # on one code path.
@@ -495,7 +495,7 @@ class S6Error(RuntimeError):
 class GatewayNotRegisteredError(S6Error):
     """Raised when a lifecycle method targets a slot that doesn't exist.
 
-    Most commonly: ``hermes -p typo gateway start`` when no profile
+    Most commonly: ``cybernetics -p typo gateway start`` when no profile
     ``typo`` exists. Carries the unprefixed profile name (not the
     full ``gateway-<profile>`` service-dir name) so callers can phrase
     a user-facing message like "no such gateway 'typo'".
@@ -505,7 +505,7 @@ class GatewayNotRegisteredError(S6Error):
         self.profile = profile
         super().__init__(
             f"no such gateway {profile!r}: register it with "
-            f"`hermes profile create {profile}` first, or pass "
+            f"`cybernetics profile create {profile}` first, or pass "
             "an existing profile name via `-p <name>`",
             service=f"gateway-{profile}",
         )
@@ -570,11 +570,11 @@ class S6ServiceManager:
              so with-contenv's root HOME does not leak into the
              unprivileged gateway process.
           3. Activates the bundled venv.
-          4. Drops to the hermes user and exec's
-             ``hermes -p <profile> gateway run`` (or just ``hermes
+          4. Drops to the cybernetics user and exec's
+             ``cybernetics -p <profile> gateway run`` (or just ``hermes
              gateway run`` for the default profile — see below).
 
-        Special case: ``profile == "default"`` emits ``hermes gateway
+        Special case: ``profile == "default"`` emits ``cybernetics gateway
         run`` with **no** ``-p`` flag. This is the sentinel for "the
         root HERMES_HOME profile" (the implicit profile that exists at
         the top of $HERMES_HOME, not under profiles/). It must be
@@ -615,9 +615,9 @@ class S6ServiceManager:
         # guard.
         lines.append("export HERMES_S6_SUPERVISED_CHILD=1")
         if profile == "default":
-            gateway_cmd = "hermes gateway run"
+            gateway_cmd = "cybernetics gateway run"
         else:
-            gateway_cmd = f"hermes -p {shlex.quote(profile)} gateway run"
+            gateway_cmd = f"cybernetics -p {shlex.quote(profile)} gateway run"
         # Skip the drop when already non-root (setgroups() lacks CAP_SETGID →
         # s6 boot-loop).
         lines.append(f'[ "$(id -u)" = 0 ] || exec {gateway_cmd}')
@@ -651,7 +651,7 @@ class S6ServiceManager:
              banner output and other plain stdout writes.)
           2. ``T <log_dir>`` — also write a timestamped copy to the
              rotated log directory (``current`` + archived ``@*.s``
-             files). This is what ``hermes logs`` reads and what
+             files). This is what ``cybernetics logs`` reads and what
              persists across container restarts via the volume mount.
 
         ``T`` is non-sticky: it only prefixes lines for the next
@@ -678,7 +678,7 @@ class S6ServiceManager:
             f'chown -R hermes:hermes "$log_dir" 2>/dev/null || true\n'
             # Skip the drop when already non-root (CAP_SETGID).
             f'[ "$(id -u)" = 0 ] || exec s6-log 1 n10 s1000000 T "$log_dir"\n'
-            f'exec s6-setuidgid hermes s6-log 1 n10 s1000000 T "$log_dir"\n'
+            f'exec s6-setuidgid cybernetics s6-log 1 n10 s1000000 T "$log_dir"\n'
         )
 
     # -- lifecycle ---------------------------------------------------------
@@ -769,7 +769,7 @@ class S6ServiceManager:
         BEFORE sending the down command, so the gateway's shutdown
         handler recognises this SIGTERM as an operator-initiated stop
         and persists ``gateway_state=stopped`` (respecting the explicit
-        intent). Without the marker, an intentional ``hermes gateway
+        intent). Without the marker, an intentional ``cybernetics gateway
         stop`` is indistinguishable from the container/s6 SIGTERM sent on
         ``docker restart``; the latter must NOT persist ``stopped`` or
         container_boot refuses to auto-start on the next boot (#42675).
@@ -865,11 +865,11 @@ class S6ServiceManager:
             log_run.write_text(self._render_log_run(profile))
             log_run.chmod(0o755)
 
-            # Pre-create the supervise/ skeleton with hermes ownership
+            # Pre-create the supervise/ skeleton with cybernetics ownership
             # BEFORE we publish the slot. s6-supervise will EEXIST our
             # dirs/FIFOs and inherit the ownership, so the runtime
             # s6-svc / s6-svstat / s6-svwait calls (all dispatched as
-            # the hermes user) won't hit EACCES on root-owned 0700
+            # the cybernetics user) won't hit EACCES on root-owned 0700
             # dirs. See ``_seed_supervise_skeleton`` for the full
             # rationale.
             _seed_supervise_skeleton(tmp_dir)

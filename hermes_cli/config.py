@@ -6,10 +6,10 @@ Config files are stored in ~/.hermes/ for easy access:
 - ~/.hermes/.env         - API keys and secrets
 
 This module provides:
-- hermes config          - Show current configuration
-- hermes config edit     - Open config in editor
-- hermes config set      - Set a specific value
-- hermes config wizard   - Re-run setup wizard
+- cybernetics config          - Show current configuration
+- cybernetics config edit     - Open config in editor
+- cybernetics config set      - Set a specific value
+- cybernetics config wizard   - Re-run setup wizard
 """
 
 import copy
@@ -45,13 +45,13 @@ def _backup_corrupt_config(config_path: Path) -> Optional[Path]:
     When the YAML can't be parsed, ``load_config()`` silently falls back to
     ``DEFAULT_CONFIG`` and the user's broken file stays on disk untouched.
     That file is still the user's only copy of their intended overrides — if
-    they re-run the setup wizard or ``hermes config set`` (which rewrites
+    they re-run the setup wizard or ``cybernetics config set`` (which rewrites
     ``config.yaml``), the broken-but-recoverable content is gone for good.
 
     This snapshots the corrupted file to ``config.yaml.corrupt.<ts>.bak`` so
     the user can diff/repair it. Unlike Gemini CLI's policy-file recovery
     (which resets the live file to a clean state), we deliberately leave
-    ``config.yaml`` in place: hermes never silently mutates the user's config,
+    ``config.yaml`` in place: cybernetics never silently mutates the user's config,
     and leaving it means a hand-fixed file is re-read on the next load. The
     backup is best-effort — any failure (permissions, symlink, disk full) is
     swallowed so config loading is never blocked by backup problems.
@@ -103,13 +103,13 @@ def _warn_config_parse_failure(config_path: Path, exc: Exception) -> None:
     scrolled off-screen on the first invocation and was never seen again.
 
     Now: warn once per (path, mtime_ns, size) on stderr **and** in
-    ``agent.log`` / ``errors.log`` at WARNING level so ``hermes logs``
+    ``agent.log`` / ``errors.log`` at WARNING level so ``cybernetics logs``
     surfaces it. Re-warns automatically if the file changes (different
     mtime/size), so users editing the config see the next failure. On the
     first warning for a given broken file we also snapshot it to a
     timestamped ``.bak`` (best-effort) so the user's recoverable content
     survives any later rewrite of ``config.yaml`` by the setup wizard or
-    ``hermes config set``.
+    ``cybernetics config set``.
     """
     try:
         st = config_path.stat()
@@ -132,7 +132,7 @@ def _warn_config_parse_failure(config_path: Path, exc: Exception) -> None:
         msg += f" A copy of the corrupted file was saved to {backup_path}."
     logger.warning(msg)
     try:
-        sys.stderr.write(f"⚠️  hermes config: {msg}\n")
+        sys.stderr.write(f"⚠️  cybernetics config: {msg}\n")
         sys.stderr.flush()
     except Exception:
         pass
@@ -152,12 +152,12 @@ _ENV_VAR_NAME_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 #   ``PYTHONUSERBASE`` — Python interpreter init. Hermes itself starts
 #   from one of these on every restart.
 # * ``NODE_OPTIONS`` / ``NODE_PATH`` — Node interpreter; affects npm,
-#   ``hermes update``, the TUI build.
+#   ``cybernetics update``, the TUI build.
 # * ``PATH`` — too broad to allow. The dashboard never needs to rewrite
 #   the operator's PATH; if a tool can't be found, the fix is to add an
 #   absolute path in the integration config, not to mutate PATH globally.
 # * ``GIT_SSH_COMMAND`` / ``GIT_EXEC_PATH`` — git rewrites that fire
-#   on every plugin install / ``hermes update``.
+#   on every plugin install / ``cybernetics update``.
 # * ``BROWSER`` / ``EDITOR`` / ``VISUAL`` / ``PAGER`` — commands the
 #   shell or CLI invokes implicitly. Wrong values here = RCE on next
 #   ``$EDITOR``.
@@ -281,8 +281,8 @@ _EXTRA_ENV_KEYS = frozenset({
     "MATRIX_REQUIRE_MENTION", "MATRIX_FREE_RESPONSE_ROOMS", "MATRIX_AUTO_THREAD", "MATRIX_DM_AUTO_THREAD",
     "MATRIX_RECOVERY_KEY",
     # Langfuse observability plugin — optional tuning keys + standard SDK vars.
-    # Activation is via plugins.enabled (opt-in through `hermes plugins enable
-    # observability/langfuse` or `hermes tools → Langfuse`); credentials gate
+    # Activation is via plugins.enabled (opt-in through `cybernetics plugins enable
+    # observability/langfuse` or `cybernetics tools → Langfuse`); credentials gate
     # the plugin at runtime.
     "HERMES_LANGFUSE_ENV",
     "HERMES_LANGFUSE_RELEASE",
@@ -369,7 +369,7 @@ def detect_install_method(project_root: Optional[Path] = None) -> str:
         at boot via ``docker/stage2-hook.sh``.
     An unsupported manual install dropped into a container (no stamp) was
     wrongly classified as the published image by bare container detection,
-    so ``hermes update`` bailed with "doesn't apply inside the Docker
+    so ``cybernetics update`` bailed with "doesn't apply inside the Docker
     container". Without that fallback such installs fall through to the
     ``.git``/pip checks and behave like any off-path install. See issue #34397.
     """
@@ -414,7 +414,7 @@ def is_uv_tool_install() -> bool:
     NOT consult ``uv tool list``: it would also return True when
     ``hermes-agent`` happens to be uv-tool-installed on the machine while
     the *active* Hermes is a regular pip/venv install, causing
-    ``hermes update`` to upgrade the wrong copy. It would also block on a
+    ``cybernetics update`` to upgrade the wrong copy. It would also block on a
     subprocess call (~seconds) just to compute a recommendation string.
     """
     def _has_uv_tool_marker(path: str) -> bool:
@@ -443,7 +443,7 @@ def recommended_update_command_for_method(method: str) -> str:
         if shutil.which("uv"):
             return "uv pip install --upgrade hermes-agent"
         return "pip install --upgrade hermes-agent"
-    return "hermes update"
+    return "cybernetics update"
 
 
 def recommended_update_command() -> str:
@@ -455,7 +455,7 @@ def recommended_update_command() -> str:
     return recommended_update_command_for_method(method)
 
 
-# Long-form text for ``hermes update`` / ``--check`` when running inside the
+# Long-form text for ``cybernetics update`` / ``--check`` when running inside the
 # Docker image.  Surfaced by ``cmd_update`` and ``_cmd_update_check`` in
 # hermes_cli/main.py; lives here so the wording stays consistent and we
 # don't grow two slightly-different copies.
@@ -471,7 +471,7 @@ def recommended_update_command() -> str:
 #     helper spells that out, with notes on tag pinning and config
 #     persistence so users don't get blindsided.
 _DOCKER_UPDATE_MESSAGE = """\
-✗ ``hermes update`` doesn't apply inside the Docker container.
+✗ ``cybernetics update`` doesn't apply inside the Docker container.
 
 Hermes Agent runs as a published image (nousresearch/hermes-agent), not a
 git checkout — the container has no working tree to pull into.  Update by
@@ -498,7 +498,7 @@ Notes:
 
 
 def format_docker_update_message() -> str:
-    """Return the user-facing message for ``hermes update`` inside Docker.
+    """Return the user-facing message for ``cybernetics update`` inside Docker.
 
     Centralised so ``cmd_update`` (the apply path) and ``_cmd_update_check``
     (the dry-run path) share the same wording.  See ``_DOCKER_UPDATE_MESSAGE``
@@ -672,7 +672,7 @@ def _secure_dir(path):
     """Set directory to owner-only access (0700 by default). No-op on Windows.
 
     Skipped in managed mode — the NixOS module sets group-readable
-    permissions (0750) so interactive users in the hermes group can
+    permissions (0750) so interactive users in the cybernetics group can
     share state with the gateway service.
 
     The mode can be overridden via the HERMES_HOME_MODE environment variable
@@ -753,7 +753,7 @@ def _ensure_default_soul_md(home: Path) -> None:
 
 
 def ensure_hermes_home():
-    """Ensure ~/.hermes directory structure exists with secure permissions.
+    """Ensure ~/.cybernetics directory structure exists with secure permissions.
 
     In managed mode (NixOS), dirs are created by the activation script with
     setgid + group-writable (2770). We skip mkdir and set umask(0o007) so
@@ -1067,7 +1067,7 @@ DEFAULT_CONFIG = {
     #   - enabled: True -> False   (opt-in; most users never use /rollback)
     #   - max_snapshots: 50 -> 20  (now actually enforced via ref rewrite)
     #   - auto_prune:   False -> True (orphans/stale pruned automatically)
-    # Opt in via ``hermes chat --checkpoints`` or set enabled=True here.
+    # Opt in via ``cybernetics chat --checkpoints`` or set enabled=True here.
     "checkpoints": {
         "enabled": False,
         # Max checkpoints to keep per working directory.  Pre-v2 this only
@@ -1083,7 +1083,7 @@ DEFAULT_CONFIG = {
         # Prevents accidental snapshotting of datasets, model weights, and
         # other large generated assets.  0 disables the filter.
         "max_file_size_mb": 10,
-        # Auto-maintenance: hermes sweeps the checkpoint base at startup
+        # Auto-maintenance: cybernetics sweeps the checkpoint base at startup
         # (at most once per ``min_interval_hours``) and:
         #   * deletes project entries whose workdir no longer exists (orphan)
         #   * deletes project entries whose last_touch is older than
@@ -1320,7 +1320,7 @@ DEFAULT_CONFIG = {
         },
         # Triage specifier — flesh out a rough one-liner in the Kanban
         # Triage column into a concrete spec, then promote it to ``todo``.
-        # Invoked by ``hermes kanban specify`` (single id or --all). Set a
+        # Invoked by ``cybernetics kanban specify`` (single id or --all). Set a
         # cheap, capable model here (gemini-flash works well); the main
         # model is overkill for short spec expansion.
         "triage_specifier": {
@@ -1333,7 +1333,7 @@ DEFAULT_CONFIG = {
         },
         # Kanban decomposer — decomposes a triage task into a graph of
         # child tasks routed to specialist profiles by description.
-        # Invoked by ``hermes kanban decompose`` and the kanban
+        # Invoked by ``cybernetics kanban decompose`` and the kanban
         # auto-decompose dispatcher tick. Returns a JSON task graph;
         # uses more tokens than the specifier so allow more headroom.
         "kanban_decomposer": {
@@ -1346,7 +1346,7 @@ DEFAULT_CONFIG = {
         },
         # Profile describer — auto-generates a 1-2 sentence description
         # of what a profile is good at. Invoked by
-        # ``hermes profile describe <name> --auto`` and the dashboard's
+        # ``cybernetics profile describe <name> --auto`` and the dashboard's
         # auto-generate button. Short, cheap call.
         "profile_describer": {
             "provider": "auto",
@@ -1359,7 +1359,7 @@ DEFAULT_CONFIG = {
         # Curator — skill-usage review fork. Timeout is generous because the
         # review pass can take several minutes on reasoning models (umbrella
         # building over hundreds of candidate skills). "auto" = use main chat
-        # model; override via `hermes model` → auxiliary → Curator to route
+        # model; override via `cybernetics model` → auxiliary → Curator to route
         # to a cheaper aux model (e.g. openrouter google/gemini-3-flash-preview).
         "curator": {
             "provider": "auto",
@@ -1403,18 +1403,18 @@ DEFAULT_CONFIG = {
         # behavior of showing tool-call summaries inline.
         "resume_skip_tool_only": True,
         "busy_input_mode": "interrupt",  # interrupt | queue | steer
-        # Which interface bare `hermes` (and `hermes chat`) launches by default:
+        # Which interface bare `hermes` (and `cybernetics chat`) launches by default:
         #   "cli" — the classic prompt_toolkit REPL (default, preserves prior behavior)
         #   "tui" — the modern Ink TUI (same as passing `--tui`)
         # Explicit flags always win over this setting: `--cli` forces the classic
         # REPL and `--tui` (or HERMES_TUI=1) forces the TUI regardless of config.
         "interface": "cli",
-        # When true, `hermes --tui` auto-resumes the most recent human-
+        # When true, `cybernetics --tui` auto-resumes the most recent human-
         # facing session on launch instead of forging a fresh one.
-        # Mirrors `hermes -c` muscle memory.  Default off so existing
+        # Mirrors `cybernetics -c` muscle memory.  Default off so existing
         # users aren't surprised.  HERMES_TUI_RESUME=<id> always wins.
         "tui_auto_resume_recent": False,
-        # When true (default), `hermes --tui` drops a one-time hint
+        # When true (default), `cybernetics --tui` drops a one-time hint
         # ("subagents working · /agents to watch live") the first time a turn
         # starts delegating, nudging the user toward the live spawn-tree
         # dashboard. Set false to suppress the hint.
@@ -1858,7 +1858,7 @@ DEFAULT_CONFIG = {
     # and patch drift. Runs inactivity-triggered from session start — no
     # cron daemon.
     #
-    # See `hermes curator status` for the last run summary.
+    # See `cybernetics curator status` for the last run summary.
     "curator": {
         "enabled": True,
         # How long to wait between curator runs (hours).  Default: 7 days.
@@ -1872,7 +1872,7 @@ DEFAULT_CONFIG = {
         "archive_after_days": 90,
         # Also prune (archive) bundled built-in skills after the inactivity
         # period, not just agent-created ones. ON by default. Built-ins are
-        # normally restored on every `hermes update`, so pruning them only
+        # normally restored on every `cybernetics update`, so pruning them only
         # sticks because a suppression list tells the re-seeder to leave them
         # archived. Hub-installed skills are NEVER pruned here — they have an
         # external upstream owner. Built-ins accrue usage telemetry and their
@@ -1884,7 +1884,7 @@ DEFAULT_CONFIG = {
         # Pre-run backup: before every real curator pass (dry-run is
         # skipped), snapshot ~/.hermes/skills/ into
         # ~/.hermes/skills/.curator_backups/<utc-iso>/skills.tar.gz so the
-        # user can roll back with `hermes curator rollback`.
+        # user can roll back with `cybernetics curator rollback`.
         "backup": {
             "enabled": True,
             "keep": 5,  # retain last N regular snapshots
@@ -2070,7 +2070,7 @@ DEFAULT_CONFIG = {
         # Acknowledged supply-chain security advisories. Each entry is the
         # ID of an advisory the user has read and acted on (uninstalled the
         # compromised package, rotated credentials). Acked advisories no
-        # longer trigger the startup banner. Add via `hermes doctor --ack
+        # longer trigger the startup banner. Add via `cybernetics doctor --ack
         # <id>`; remove by editing the list directly. See
         # ``hermes_cli/security_advisories.py`` for the catalog.
         "acked_advisories": [],
@@ -2098,7 +2098,7 @@ DEFAULT_CONFIG = {
     # Kanban multi-agent coordination — controls the dispatcher loop that
     # spawns workers for ready tasks. The dispatcher ticks every N seconds
     # (default 60), reclaims stale claims, promotes dependency-satisfied
-    # todos to ready, and fires `hermes -p <assignee> chat -q ...` for
+    # todos to ready, and fires `cybernetics -p <assignee> chat -q ...` for
     # each claimable ready task. One dispatcher per profile is sufficient;
     # running more than one on the same kanban.db will race for claims.
     "kanban": {
@@ -2141,7 +2141,7 @@ DEFAULT_CONFIG = {
         "max_in_progress_per_profile": None,
         # When true, the kanban dispatcher auto-runs the decomposer on
         # tasks that land in Triage (every dispatcher tick). When false,
-        # decomposition is manual via `hermes kanban decompose <id>` or
+        # decomposition is manual via `cybernetics kanban decompose <id>` or
         # the dashboard's Decompose button.
         "auto_decompose": True,
         # Max triage tasks to decompose per dispatcher tick. Prevents a
@@ -2219,7 +2219,7 @@ DEFAULT_CONFIG = {
         "enabled": True,
         "url": "https://hermes-agent.nousresearch.com/docs/api/model-catalog.json",
         # Disk cache TTL in hours.  Beyond this, the CLI refetches on the
-        # next /model or `hermes model` invocation; network failures
+        # next /model or `cybernetics model` invocation; network failures
         # silently fall back to the stale cache.
         "ttl_hours": 1,
         # Optional per-provider override URLs for third parties that want
@@ -2333,7 +2333,7 @@ DEFAULT_CONFIG = {
         # silently deleting it could surprise users.  Opt in explicitly.
         "auto_prune": False,
         # How many days of ended-session history to keep.  Matches the
-        # default of ``hermes sessions prune``.
+        # default of ``cybernetics sessions prune``.
         "retention_days": 90,
         # VACUUM after a prune that actually deleted rows.  SQLite does not
         # reclaim disk space on DELETE — freed pages are just reused on
@@ -2370,11 +2370,11 @@ DEFAULT_CONFIG = {
         "profile_build": "ask",
     },
 
-    # ``hermes update`` behaviour.
+    # ``cybernetics update`` behaviour.
     "updates": {
-        # Run a full ``hermes backup``-style zip of HERMES_HOME before every
-        # ``hermes update``.  Backups land in ``<HERMES_HOME>/backups/`` and
-        # can be restored with ``hermes import <path>``.  Off by default —
+        # Run a full ``cybernetics backup``-style zip of HERMES_HOME before every
+        # ``cybernetics update``.  Backups land in ``<HERMES_HOME>/backups/`` and
+        # can be restored with ``cybernetics import <path>``.  Off by default —
         # on large HERMES_HOME directories the zip can add minutes to every
         # update.  Set to true to re-enable, or pass ``--backup`` to opt in
         # for a single update run.
@@ -2385,7 +2385,7 @@ DEFAULT_CONFIG = {
         # disable backups entirely, set ``pre_update_backup: false`` above
         # rather than ``backup_keep: 0``.
         "backup_keep": 5,
-        # What `hermes update` does with uncommitted local changes to the
+        # What `cybernetics update` does with uncommitted local changes to the
         # source tree when it runs NON-interactively — i.e. triggered from
         # the desktop/chat app or the gateway, where there's no TTY to answer
         # a restore prompt. Interactive (terminal) updates are unaffected:
@@ -2454,7 +2454,7 @@ DEFAULT_CONFIG = {
     # X (Twitter) Search via xAI's built-in x_search Responses tool.
     # The tool registers when xAI credentials are available (SuperGrok
     # OAuth or XAI_API_KEY) AND the x_search toolset is enabled in
-    # `hermes tools`. These settings tune the backing Responses API call.
+    # `cybernetics tools`. These settings tune the backing Responses API call.
     "x_search": {
         # xAI model used for the Responses call. grok-4.20-reasoning is
         # the recommended default; any Grok model with x_search tool
@@ -2502,7 +2502,7 @@ DEFAULT_CONFIG = {
             # https://vault.bitwarden.eu for EU Cloud, or your own URL
             # for self-hosted Bitwarden.  Plumbed into the bws subprocess
             # as BWS_SERVER_URL.  Prompted for during
-            # `hermes secrets bitwarden setup`.
+            # `cybernetics secrets bitwarden setup`.
             "server_url": "",
         },
     },
@@ -2945,7 +2945,7 @@ OPTIONAL_ENV_VARS = {
         "category": "provider",
     },
     "AZURE_FOUNDRY_BASE_URL": {
-        "description": "Azure Foundry base URL (set via 'hermes model' for endpoint-specific config)",
+        "description": "Azure Foundry base URL (set via 'cybernetics model' for endpoint-specific config)",
         "prompt": "Azure Foundry base URL",
         "url": None,
         "password": False,
@@ -3730,7 +3730,7 @@ def get_missing_skill_config_vars() -> List[Dict[str, Any]]:
         all_vars = discover_all_skill_config_vars()
     except Exception as e:
         # A malformed SKILL.md, unreadable external skill dir, or similar
-        # should never break `hermes update`.  Skill-config prompting is a
+        # should never break `cybernetics update`.  Skill-config prompting is a
         # post-migration nicety, not a blocker.
         import logging
         logging.getLogger(__name__).debug(
@@ -4148,7 +4148,7 @@ def validate_config_structure(config: Optional[Dict[str, Any]] = None) -> List["
         try:
             config = load_config()
         except Exception:
-            return [ConfigIssue("error", "Could not load config.yaml", "Run 'hermes setup' to create a valid config")]
+            return [ConfigIssue("error", "Could not load config.yaml", "Run 'cybernetics setup' to create a valid config")]
 
     issues: List[ConfigIssue] = []
 
@@ -4298,7 +4298,7 @@ def print_config_warnings(config: Optional[Dict[str, Any]] = None) -> None:
     for ci in issues:
         marker = "\033[31m✗\033[0m" if ci.severity == "error" else "\033[33m⚠\033[0m"
         lines.append(f"  {marker} {ci.message}")
-    lines.append("  \033[2mRun 'hermes doctor' for fix suggestions.\033[0m")
+    lines.append("  \033[2mRun 'cybernetics doctor' for fix suggestions.\033[0m")
     sys.stderr.write("\n".join(lines) + "\n\n")
 
 
@@ -4688,7 +4688,7 @@ def migrate_config(interactive: bool = True, quiet: bool = False) -> Dict[str, A
                 else:
                     print(
                         "  ✓ Plugins now opt-in: no existing plugins to grandfather. "
-                        "Use `hermes plugins enable <name>` to activate."
+                        "Use `cybernetics plugins enable <name>` to activate."
                     )
 
     # ── Version 22 → 23: seed curator defaults + create logs/curator/ ──
@@ -4697,7 +4697,7 @@ def migrate_config(interactive: bool = True, quiet: bool = False) -> Dict[str, A
     # unification under `auxiliary.curator`) never wrote the curator section
     # to disk. The runtime deep-merge in `load_config()` fills defaults at
     # read time, so the curator *functions*; but users can't see/edit the
-    # settings in their `config.yaml`, and `hermes curator status` has no
+    # settings in their `config.yaml`, and `cybernetics curator status` has no
     # stable logs dir to point at until the first run mkdir's it.
     #
     # This migration:
@@ -4899,7 +4899,7 @@ def migrate_config(interactive: bool = True, quiet: bool = False) -> Dict[str, A
                         print(f"  ✓ Saved {name}")
                     print()
             else:
-                print("  Set later with: hermes config set <key> <value>")
+                print("  Set later with: cybernetics config set <key> <value>")
     
     # Check for missing config fields
     missing_config = get_missing_config_fields()
@@ -4966,7 +4966,7 @@ def migrate_config(interactive: bool = True, quiet: bool = False) -> Dict[str, A
                 print()
             save_config(config)
         else:
-            print("  Set later with: hermes config set <key> <value>")
+            print("  Set later with: cybernetics config set <key> <value>")
 
     return results
 
@@ -5434,8 +5434,8 @@ _FALLBACK_COMMENT = """
 #
 # Supported providers:
 #   openrouter   (OPENROUTER_API_KEY)  — routes to any model
-#   openai-codex (OAuth — hermes auth) — OpenAI Codex
-#   nous         (OAuth — hermes auth) — Nous Portal
+#   openai-codex (OAuth — cybernetics auth) — OpenAI Codex
+#   nous         (OAuth — cybernetics auth) — Nous Portal
 #   zai          (ZAI_API_KEY)         — Z.AI / GLM
 #   kimi-coding  (KIMI_API_KEY)        — Kimi / Moonshot
 #   kimi-coding-cn (KIMI_CN_API_KEY)   — Kimi / Moonshot (China)
@@ -5466,8 +5466,8 @@ _COMMENTED_SECTIONS = """
 #
 # Supported providers:
 #   openrouter   (OPENROUTER_API_KEY)  — routes to any model
-#   openai-codex (OAuth — hermes auth) — OpenAI Codex
-#   nous         (OAuth — hermes auth) — Nous Portal
+#   openai-codex (OAuth — cybernetics auth) — OpenAI Codex
+#   nous         (OAuth — cybernetics auth) — Nous Portal
 #   zai          (ZAI_API_KEY)         — Z.AI / GLM
 #   kimi-coding  (KIMI_API_KEY)        — Kimi / Moonshot
 #   kimi-coding-cn (KIMI_CN_API_KEY)   — Kimi / Moonshot (China)
@@ -5537,9 +5537,9 @@ def load_env() -> Dict[str, str]:
 
     The parsed dict is memoised keyed on the .env file mtime, because
     ``get_env_value()`` is called dozens-to-hundreds of times per
-    interactive menu render (`hermes tools`, `hermes setup`, status
+    interactive menu render (`cybernetics tools`, `cybernetics setup`, status
     panels). Sanitisation is O(lines × known-keys), so re-parsing the
-    same file on every call was burning ~300ms of CPU per `hermes tools`
+    same file on every call was burning ~300ms of CPU per `cybernetics tools`
     menu paint on top of the OAuth-refresh slowness. The mtime check
     invalidates the cache when the user edits .env mid-process.
     """
@@ -6016,7 +6016,7 @@ def show_config():
         if _env_ghost is not None and str(_env_ghost).strip() != str(_cfg_max_turns).strip():
             print(color(
                 f"                ⚠ .env has stale HERMES_MAX_ITERATIONS={_env_ghost} "
-                f"(run 'hermes doctor --fix' to remove)",
+                f"(run 'cybernetics doctor --fix' to remove)",
                 Colors.YELLOW,
             ))
     except Exception:
@@ -6138,9 +6138,9 @@ def show_config():
 
     print()
     print(color("─" * 60, Colors.DIM))
-    print(color("  hermes config edit     # Edit config file", Colors.DIM))
-    print(color("  hermes config set <key> <value>", Colors.DIM))
-    print(color("  hermes setup           # Run setup wizard", Colors.DIM))
+    print(color("  cybernetics config edit     # Edit config file", Colors.DIM))
+    print(color("  cybernetics config set <key> <value>", Colors.DIM))
+    print(color("  cybernetics setup           # Run setup wizard", Colors.DIM))
     print()
 
 
@@ -6268,12 +6268,12 @@ def config_command(args):
         key = getattr(args, 'key', None)
         value = getattr(args, 'value', None)
         if not key or value is None:
-            print("Usage: hermes config set <key> <value>")
+            print("Usage: cybernetics config set <key> <value>")
             print()
             print("Examples:")
-            print("  hermes config set model anthropic/claude-sonnet-4")
-            print("  hermes config set terminal.backend docker")
-            print("  hermes config set OPENROUTER_API_KEY sk-or-...")
+            print("  cybernetics config set model anthropic/claude-sonnet-4")
+            print("  cybernetics config set terminal.backend docker")
+            print("  cybernetics config set OPENROUTER_API_KEY sk-or-...")
             sys.exit(1)
         set_config_value(key, value)
     
@@ -6373,7 +6373,7 @@ def config_command(args):
         if missing_config:
             print()
             print(color(f"  {len(missing_config)} new config option(s) available", Colors.YELLOW))
-            print("    Run 'hermes config migrate' to add them")
+            print("    Run 'cybernetics config migrate' to add them")
         
         print()
     
@@ -6381,13 +6381,13 @@ def config_command(args):
         print(f"Unknown config command: {subcmd}")
         print()
         print("Available commands:")
-        print("  hermes config           Show current configuration")
-        print("  hermes config edit      Open config in editor")
-        print("  hermes config set <key> <value>   Set a config value")
-        print("  hermes config check     Check for missing/outdated config")
-        print("  hermes config migrate   Update config with new options")
-        print("  hermes config path      Show config file path")
-        print("  hermes config env-path  Show .env file path")
+        print("  cybernetics config           Show current configuration")
+        print("  cybernetics config edit      Open config in editor")
+        print("  cybernetics config set <key> <value>   Set a config value")
+        print("  cybernetics config check     Check for missing/outdated config")
+        print("  cybernetics config migrate   Update config with new options")
+        print("  cybernetics config path      Show config file path")
+        print("  cybernetics config env-path  Show .env file path")
         sys.exit(1)
 
 
@@ -6436,7 +6436,7 @@ _inject_profile_env_vars()
 # ── Platform-plugin env var injection ────────────────────────────────────────
 # Bundled platform plugins under ``plugins/platforms/*/plugin.yaml`` declare
 # their required env vars via ``requires_env``.  This mirror of
-# ``_inject_profile_env_vars`` surfaces them in ``hermes config`` UI so users
+# ``_inject_profile_env_vars`` surfaces them in ``cybernetics config`` UI so users
 # can configure Teams / IRC / Google Chat without the core repo ever needing
 # to know they exist.
 #

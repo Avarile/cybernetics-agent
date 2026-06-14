@@ -39,45 +39,45 @@ def _inherited_flag(parser, *args, **kwargs):
 
 _EPILOGUE = """
 Examples:
-    hermes                        Start interactive chat
-    hermes chat -q "Hello"        Single query mode
-    hermes --tui                  Launch the modern TUI (or set display.interface: tui)
-    hermes --cli                  Force the classic REPL (overrides display.interface: tui)
-    hermes -c                     Resume the most recent session
-    hermes -c "my project"        Resume a session by name (latest in lineage)
-    hermes --resume <session_id>  Resume a specific session by ID
-    hermes setup                  Run setup wizard
-    hermes logout                 Clear stored authentication
-    hermes auth add <provider>    Add a pooled credential
-    hermes auth list              List pooled credentials
-    hermes auth remove <p> <t>    Remove pooled credential by index, id, or label
-    hermes auth reset <provider>  Clear exhaustion status for a provider
-    hermes model                  Select default model
-    hermes fallback [list]        Show fallback provider chain
-    hermes fallback add           Add a fallback provider (same picker as `hermes model`)
-    hermes fallback remove        Remove a fallback provider from the chain
-    hermes config                 View configuration
-    hermes config edit            Edit config in $EDITOR
-    hermes config set model gpt-4 Set a config value
-    hermes gateway                Run messaging gateway
-    hermes -s hermes-agent-dev,github-auth
-    hermes -w                     Start in isolated git worktree
-    hermes gateway install        Install gateway background service
-    hermes sessions list          List past sessions
-    hermes sessions browse        Interactive session picker
-    hermes sessions rename ID T   Rename/title a session
-    hermes logs                   View agent.log (last 50 lines)
-    hermes logs -f                Follow agent.log in real time
-    hermes logs errors            View errors.log
-    hermes logs --since 1h        Lines from the last hour
-    hermes debug share             Upload debug report for support
-    hermes update                 Update to latest version
-    hermes dashboard              Start web UI dashboard (port 9119)
-    hermes dashboard --stop       Stop running dashboard processes
-    hermes dashboard --status     List running dashboard processes
+    cybernetics                        Start interactive chat
+    cybernetics chat -q "Hello"        Single query mode
+    cybernetics --tui                  Launch the modern TUI (or set display.interface: tui)
+    cybernetics --cli                  Force the classic REPL (overrides display.interface: tui)
+    cybernetics -c                     Resume the most recent session
+    cybernetics -c "my project"        Resume a session by name (latest in lineage)
+    cybernetics --resume <session_id>  Resume a specific session by ID
+    cybernetics setup                  Run setup wizard
+    cybernetics logout                 Clear stored authentication
+    cybernetics auth add <provider>    Add a pooled credential
+    cybernetics auth list              List pooled credentials
+    cybernetics auth remove <p> <t>    Remove pooled credential by index, id, or label
+    cybernetics auth reset <provider>  Clear exhaustion status for a provider
+    cybernetics model                  Select default model
+    cybernetics fallback [list]        Show fallback provider chain
+    cybernetics fallback add           Add a fallback provider (same picker as `cybernetics model`)
+    cybernetics fallback remove        Remove a fallback provider from the chain
+    cybernetics config                 View configuration
+    cybernetics config edit            Edit config in $EDITOR
+    cybernetics config set model gpt-4 Set a config value
+    cybernetics gateway                Run messaging gateway
+    cybernetics -s hermes-agent-dev,github-auth
+    cybernetics -w                     Start in isolated git worktree
+    cybernetics gateway install        Install gateway background service
+    cybernetics sessions list          List past sessions
+    cybernetics sessions browse        Interactive session picker
+    cybernetics sessions rename ID T   Rename/title a session
+    cybernetics logs                   View agent.log (last 50 lines)
+    cybernetics logs -f                Follow agent.log in real time
+    cybernetics logs errors            View errors.log
+    cybernetics logs --since 1h        Lines from the last hour
+    cybernetics debug share             Upload debug report for support
+    cybernetics update                 Update to latest version
+    cybernetics dashboard              Start web UI dashboard (port 9119)
+    cybernetics dashboard --stop       Stop running dashboard processes
+    cybernetics dashboard --status     List running dashboard processes
 
 For more help on a command:
-    hermes <command> --help
+    cybernetics <command> --help
 """
 
 
@@ -89,8 +89,8 @@ def build_top_level_parser():
     other subparsers via ``subparsers.add_parser(...)``.
     """
     parser = argparse.ArgumentParser(
-        prog="hermes",
-        description="Hermes Agent - AI assistant with tool-calling capabilities",
+        prog="cybernetics",
+        description="Cybernetics Agent - AI assistant with tool-calling capabilities",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=_EPILOGUE,
     )
@@ -114,7 +114,7 @@ def build_top_level_parser():
     # --model / --provider are accepted at the top level so they can pair
     # with -z without needing the `chat` subcommand.  If neither -z nor a
     # subcommand consumes them, they fall through harmlessly as None.
-    # Mirrors `hermes chat --model ... --provider ...` semantics.
+    # Mirrors `cybernetics chat --model ... --provider ...` semantics.
     _inherited_flag(
         parser,
         "-m",
@@ -132,7 +132,7 @@ def build_top_level_parser():
         help=(
             "Provider override for this invocation (e.g. openrouter, anthropic). "
             "Applies to -z/--oneshot and --tui. The persistent provider lives in config.yaml "
-            "under model.provider — use `hermes setup` or edit the file to change it."
+            "under model.provider — use `cybernetics setup` or edit the file to change it."
         ),
     )
     parser.add_argument(

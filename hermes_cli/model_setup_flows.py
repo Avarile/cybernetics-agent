@@ -1,4 +1,4 @@
-"""Per-provider model-selection wizard flows for ``hermes setup`` / ``hermes model``.
+"""Per-provider model-selection wizard flows for ``cybernetics setup`` / ``cybernetics model``.
 
 Extracted from ``hermes_cli/main.py`` as part of the god-file decomposition
 campaign (``~/.hermes/plans/god-file-decomposition.md``, Phase 2 — splitting
@@ -78,7 +78,7 @@ def _model_flow_openrouter(config, current_model=""):
     # Route through _prompt_api_key so users can replace a stale/broken key
     # in-flow (K/R/C) instead of having to edit ~/.hermes/.env by hand. The
     # previous bypass-when-key-exists branch left no way to recover from a
-    # bad paste short of re-running `hermes setup` from scratch. OpenRouter
+    # bad paste short of re-running `cybernetics setup` from scratch. OpenRouter
     # isn't in PROVIDER_REGISTRY so we synthesize a minimal pconfig.
     pconfig = ProviderConfig(
         id="openrouter",
@@ -405,7 +405,7 @@ def _model_flow_openai_codex(config, current_model=""):
             return
 
     _codex_token = None
-    # Prefer credential pool (where `hermes auth` stores device_code tokens),
+    # Prefer credential pool (where `cybernetics auth` stores device_code tokens),
     # fall back to legacy provider state.
     try:
         _codex_status = get_codex_auth_status()
@@ -464,10 +464,10 @@ def _model_flow_xai_oauth(_config, current_model="", *, args=None):
             print("Starting a fresh xAI OAuth login...")
             print()
             try:
-                # Forward CLI flags from ``hermes model --manual-paste``
+                # Forward CLI flags from ``cybernetics model --manual-paste``
                 # / ``--no-browser`` / ``--timeout`` into the loopback
                 # login. Without this, browser-only remotes (#26923)
-                # can't reach the manual-paste path via ``hermes model``.
+                # can't reach the manual-paste path via ``cybernetics model``.
                 mock_args = argparse.Namespace(
                     manual_paste=bool(getattr(args, "manual_paste", False)),
                     no_browser=bool(getattr(args, "no_browser", False)),
@@ -505,7 +505,7 @@ def _model_flow_xai_oauth(_config, current_model="", *, args=None):
 
     # Resolve a usable base URL.  ``resolve_xai_oauth_runtime_credentials``
     # only reads from the auth.json singleton — but credentials may legitimately
-    # live only in the pool (e.g. after ``hermes auth add xai-oauth``).  Fall
+    # live only in the pool (e.g. after ``cybernetics auth add xai-oauth``).  Fall
     # back to the default base URL in that case so the model picker still
     # completes successfully instead of bailing out with
     # ``Could not resolve xAI OAuth credentials``.
@@ -912,7 +912,7 @@ def _model_flow_custom(config):
         else:
             _caller_model.pop("api_mode", None)
         config["model"] = _caller_model
-        print("Endpoint saved. Use `/model` in chat or `hermes model` to set a model.")
+        print("Endpoint saved. Use `/model` in chat or `cybernetics model` to set a model.")
 
     # Auto-save to custom_providers so it appears in the menu next time
     _save_custom_provider(
@@ -2096,7 +2096,7 @@ def _model_flow_bedrock_api_key(config, region, current_model=""):
         bedrock_cfg["region"] = region
         cfg["bedrock"] = bedrock_cfg
 
-        # Save the API key env var name so hermes knows where to find it
+        # Save the API key env var name so cybernetics knows where to find it
         save_env_value("OPENAI_API_KEY", existing_key)
         save_env_value("OPENAI_BASE_URL", mantle_base_url)
 
@@ -2720,7 +2720,7 @@ def _model_flow_anthropic(config, current_model=""):
         # Update config with provider — clear base_url since
         # resolve_runtime_provider() always hardcodes Anthropic's URL.
         # Leaving a stale base_url in config can contaminate other
-        # providers if the user switches without running 'hermes model'.
+        # providers if the user switches without running 'cybernetics model'.
         cfg = load_config()
         model = cfg.get("model")
         if not isinstance(model, dict):
