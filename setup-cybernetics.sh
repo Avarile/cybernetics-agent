@@ -464,6 +464,8 @@ echo "  cybernetics cron list     # View scheduled jobs"
 echo "  cybernetics doctor        # Diagnose issues"
 echo ""
 echo "(Legacy 'hermes' command still works as an alias.)"
+echo "  cybernetics cron list     # View scheduled jobs"
+echo "  cybernetics doctor        # Diagnose issues"
 echo ""
 
 # Ask if they want to run setup wizard now

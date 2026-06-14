@@ -65,8 +65,8 @@ def reconcile_profile_gateways(
     (the implicit profile that lives at the top of ``$HERMES_HOME``,
     not under ``profiles/``). The dispatcher in ``hermes_cli.gateway``
     maps an empty profile suffix to ``gateway-default``, so this slot
-    is what ``hermes gateway start`` (no ``-p``) targets. Without it,
-    bare ``hermes gateway start`` inside the container would land on
+    is what ``cybernetics gateway start`` (no ``-p``) targets. Without it,
+    bare ``cybernetics gateway start`` inside the container would land on
     ``s6-svc -u /run/service/gateway-default`` → uncaught
     ``CalledProcessError`` → traceback to the user (PR #30136 review).
 
@@ -94,7 +94,7 @@ def reconcile_profile_gateways(
 
     # Default profile — always register, even if nothing has ever
     # populated the root profile dir. The slot exists so
-    # ``hermes gateway start`` (no ``-p``) has somewhere to land;
+    # ``cybernetics gateway start`` (no ``-p``) has somewhere to land;
     # auto-up only when the prior state was "running" (same rule as
     # named profiles). If the container was launched with the legacy
     # `gateway run` command and no state exists yet, seed that intent
@@ -120,8 +120,8 @@ def reconcile_profile_gateways(
         for entry in sorted(profiles_root.iterdir()):
             if not entry.is_dir():
                 continue
-            # SOUL.md is always seeded by `hermes profile create` (config.yaml
-            # is not — that comes later via `hermes setup`). Use it as the
+            # SOUL.md is always seeded by `cybernetics profile create` (config.yaml
+            # is not — that comes later via `cybernetics setup`). Use it as the
             # "real profile" marker so stray dirs (backups, manual mkdir)
             # aren't picked up.
             if not (entry / "SOUL.md").exists():
@@ -130,7 +130,7 @@ def reconcile_profile_gateways(
             # profile (above) — if a user has somehow created a
             # ``profiles/default/`` directory, skip it to avoid the
             # slot collision. Their gateway would still be reachable
-            # via ``hermes -p default-named gateway start`` if they
+            # via ``cybernetics -p default-named gateway start`` if they
             # rename the directory; we don't try to disambiguate here.
             if entry.name == "default":
                 log.warning(
@@ -297,19 +297,19 @@ def _register_service(scandir: Path, profile: str, *, start: bool) -> None:
 
         # The presence of a `down` file tells s6-supervise to NOT
         # start the service when s6-svscan picks it up. User brings
-        # it up explicitly with `hermes -p <profile> gateway start`
+        # it up explicitly with `cybernetics -p <profile> gateway start`
         # (which routes through the Phase 4
         # _dispatch_via_service_manager_if_s6 helper to `s6-svc -u`).
         if not start:
             (tmp_dir / "down").touch()
 
-        # Pre-create the supervise/ skeleton with hermes ownership
+        # Pre-create the supervise/ skeleton with cybernetics ownership
         # BEFORE we publish the slot. Mirrors the same pre-creation
         # step in S6ServiceManager.register_profile_gateway — when
         # s6-svscan picks the published slot up, the s6-supervise it
         # spawns will EEXIST our dirs/FIFOs and inherit hermes
         # ownership, so runtime s6-svc / s6-svstat / s6-svwait calls
-        # (all dispatched as the hermes user) won't hit EACCES. See
+        # (all dispatched as the cybernetics user) won't hit EACCES. See
         # ``_seed_supervise_skeleton`` in service_manager.py for the
         # full rationale.
         _seed_supervise_skeleton(tmp_dir)
