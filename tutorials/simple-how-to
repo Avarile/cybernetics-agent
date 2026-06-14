@@ -1,0 +1,230 @@
+# Cybernetics Agent — Comprehensive Tutorial
+
+Cybernetics Agent is a personal autonomous agent that lives on a machine you control (laptop, VPS, GPU box, serverless), keeps persistent memory + learned skills across sessions, and can be reached from the CLI and 20+ messaging platforms (Telegram, Discord, Slack, WhatsApp, Signal, email) through a single gateway.
+
+Below is an end-to-end walkthrough.
+
+---
+## 1. Install
+
+**macOS / Linux / WSL2 / Android Termux**
+```bash
+curl -fsSL https://raw.githubusercontent.com/Avarile/cybernetics-agent/master/scripts/install.sh | bash
+source ~/.zshrc      # or ~/.bashrc
+```
+
+**Windows (PowerShell, no admin required)**
+```powershell
+iex (irm https://raw.githubusercontent.com/Avarile/cybernetics-agent/master/scripts/install.ps1)
+```
+The Windows installer bundles Python 3.11, Node.js, ripgrep, ffmpeg, and a portable Git Bash (~45 MB).
+
+**From source (dev / contributor):**
+```bash
+git clone https://github.com/Avarile/cybernetics-agent.git
+cd cybernetics-agent
+./setup-cybernetics.sh
+```
+
+Verify with:
+```bash
+cybernetics doctor
+```
+
+---
+## 2. First-time setup
+
+Run the setup wizard to configure provider, model, tools, persona, messaging platforms, and memory:
+
+```bash
+cybernetics setup
+```
+
+Config lives in:
+- macOS/Linux/WSL2: `~/.cybernetics/`
+- Windows: `%LOCALAPPDATA%\cybernetics\`
+
+Key files inside that directory:
+
+| File          | Purpose                          |
+|---------------|----------------------------------|
+| `config.yaml` | main settings                    |
+| `SOUL.md`     | persona / personality            |
+| `MEMORY.md`   | persistent agent memory          |
+| `USER.md`     | what the agent knows about you   |
+| `.env`        | API keys & secrets               |
+| `skills/`     | learned + imported skills        |
+
+---
+## 3. Chat with it
+
+```bash
+cybernetics
+```
+
+You get a terminal UI with multiline editing, slash-command autocomplete, and streaming tool output. Useful in-chat commands (these work in CLI and every messaging platform):
+
+| Command                            | Effect                                         |
+|------------------------------------|------------------------------------------------|
+| `/new` or `/reset`                 | start a fresh conversation                     |
+| `/model provider:model-name`       | switch model on the fly                        |
+| `/personality <name>`              | switch persona                                 |
+| `/retry`, `/undo`                  | redo or remove last turn                       |
+| `/compress`                        | summarize/compress long context                |
+| `/usage`                           | token & cost usage                             |
+| `/insights --days 7`               | self-generated reflections on recent activity  |
+| `/skills`                          | list learned skills                            |
+| `/<skill-name>`                    | invoke a skill                                 |
+| Ctrl+C (CLI) / `/stop` (messaging) | interrupt current work                         |
+
+---
+## 4. Pick / change models
+
+Cybernetics is provider-agnostic:
+
+```bash
+cybernetics model           # interactive picker
+cybernetics config set model openrouter:anthropic/claude-3.5-sonnet
+cybernetics config set default_provider openrouter
+```
+
+Supported providers include OpenRouter (200+ models), OpenAI, Anthropic, NovitaAI, NVIDIA NIM (Nemotron), Hugging Face, Xiaomi MiMo, z.ai/GLM, Kimi/Moonshot, MiniMax. Keys go in `~/.cybernetics/.env`, e.g.:
+
+```
+OPENAI_API_KEY=sk-...
+ANTHROPIC_API_KEY=sk-ant-...
+OPENROUTER_API_KEY=...
+```
+
+Or via env vars:
+```bash
+export CYBERNETICS_MODEL="openai:gpt-4o"
+export CYBERNETICS_PROVIDER="openrouter"
+```
+
+---
+## 5. Tools (40+ built-in)
+
+```bash
+cybernetics tools           # interactive selector
+```
+
+Categories: web search/browsing (Firecrawl), image gen (FAL), TTS (OpenAI), code execution, file ops, and a terminal tool with 6 selectable execution backends:
+
+| Backend     | When to use                                  |
+|-------------|----------------------------------------------|
+| local       | quickest, runs on your box                   |
+| Docker      | sandboxed, hardened containers               |
+| SSH         | hand work off to a remote server             |
+| Singularity | HPC clusters                                 |
+| Modal       | serverless Python, hibernates between calls  |
+| Daytona     | serverless with persistence                  |
+
+Switch backend in `config.yaml` or via `cybernetics config set terminal.backend docker`.
+
+---
+## 6. Skills system (the "grows with you" part)
+
+Skills are procedural memory — recipes the agent writes for itself and improves over time. They live in `~/.cybernetics/skills/` and follow the open agentskills.io standard, so you can share them.
+
+```bash
+/skills                # list
+/<skill-name>          # run or inspect
+```
+
+After finishing a non-trivial task, the agent periodically "nudges" itself to persist what it learned as a reusable skill. You can also hand-write a skill (a folder with a `SKILL.md` + supporting files) and drop it into `~/.cybernetics/skills/`.
+
+---
+## 7. Memory system
+
+Three layers, all under `~/.cybernetics/`:
+
+1. `MEMORY.md` — durable facts/procedures, FTS5-indexed for fast retrieval.
+2. `USER.md` — your profile (preferences, style, constraints), refined via dialectic user modeling.
+3. Session search — full-text search + LLM summarization across past conversations.
+
+Day-to-day habits:
+- Run `/compress` when a session gets long.
+- Let the agent update `MEMORY.md` after gnarly tasks; review occasionally.
+- Edit `USER.md` directly if you want to seed preferences.
+
+---
+## 8. Messaging gateway (Telegram / Discord / Slack / …)
+
+This is what lets the agent reach you anywhere:
+
+```bash
+cybernetics gateway setup    # enter credentials per platform
+cybernetics gateway start    # run the bridge (often kept alive on a VPS)
+```
+
+Once running, all the `/`-commands above work inside DMs. The gateway is also what receives scheduled task deliveries.
+
+---
+## 9. Scheduling (natural-language cron)
+
+The scheduler runs inside the gateway process and accepts plain English:
+
+```
+every day at 9:00 AM -> send-report
+every night at 2:00 AM -> backup-databases
+every monday at 10:00 AM -> run-security-audit
+```
+
+Output is delivered to whichever platform you specify (Telegram chat, Discord channel, email, etc.). Because the gateway can run on a $5 VPS, your laptop doesn't have to be on.
+
+---
+## 10. Subagents / delegation
+
+Cybernetics can spawn isolated subagents — each with its own conversation, its own execution environment, and zero context cost to the parent. Use them for:
+
+- parallel workstreams (research several topics at once),
+- long tool chains you don't want polluting your main thread,
+- Python scripts that call agent tools over RPC.
+
+In normal chat you just ask: *"Spawn a subagent to scrape X while you keep working on Y."* For programmatic use, RPC-style calls into the tool layer are supported.
+
+---
+## 11. Web dashboard
+
+A browser-based dashboard is available for monitoring sessions, browsing memory, and inspecting tool calls:
+
+```bash
+cybernetics dashboard --no-open    # serves on 127.0.0.1:9119
+```
+
+Open `http://127.0.0.1:9119` in a browser. Drop `--no-open` to auto-launch.
+
+## 11.1 Gateway
+
+```bash
+cybernetics gateway start # start the gateway process
+cybernetics gateway stop  # stop the gateway process
+```
+
+---
+## 12. Troubleshooting
+
+```bash
+cybernetics doctor          # environment + config diagnosis
+cybernetics config set ...  # tweak any setting
+```
+
+If things break after an update, check `~/.cybernetics/config.yaml` and `~/.cybernetics/.env` first, then rerun `cybernetics setup`.
+
+---
+## Suggested first hour
+
+1. `curl -fsSL https://raw.githubusercontent.com/Avarile/cybernetics-agent/master/scripts/install.sh | bash`
+2. `cybernetics setup`
+3. `cybernetics` — have a real conversation, let it write to `MEMORY.md`.
+4. `cybernetics tools` — turn on web search + a terminal backend (Docker if you want sandboxing).
+5. `cybernetics gateway setup` for Telegram or Discord, then `cybernetics gateway start` on a small VPS.
+6. Schedule one recurring task (e.g. a morning briefing).
+7. Watch a skill emerge after a couple of multi-step tasks.
+
+---
+## References
+- GitHub: https://github.com/Avarile/cybernetics-agent
+
+The CLI surface is evolving — when in doubt, `cybernetics --help` is the ground truth.

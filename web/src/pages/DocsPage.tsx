@@ -1,3 +1,30 @@
+// TODO(cybernetics-rebrand): DocsPage is disabled during the Hermes → Cybernetics
+// rebrand. The old iframe pointed at https://hermes-agent.nousresearch.com/docs/,
+// which is the *Hermes* documentation site and no longer represents this fork.
+// There is no Cybernetics docs site yet, so rather than ship a broken/branded
+// page we render an empty placeholder. Restore the original implementation —
+// and update HERMES_DOCS_URL to a real Cybernetics docs URL — once a docs site
+// exists. The original component is preserved verbatim below in a block comment
+// so the diff is easy to revert.
+
+import { cn } from "@/lib/utils";
+
+export default function DocsPage() {
+  return (
+    <div
+      className={cn(
+        "flex min-h-0 w-full min-w-0 flex-1 flex-col items-center justify-center",
+        "pt-1 sm:pt-2 text-text-tertiary",
+      )}
+    >
+      <p className="text-sm">
+        Documentation is not available yet for Cybernetics Agent.
+      </p>
+    </div>
+  );
+}
+
+/*
 import { useLayoutEffect } from "react";
 import { ExternalLink } from "lucide-react";
 import { useI18n } from "@/i18n";
@@ -67,3 +94,4 @@ export default function DocsPage() {
     </div>
   );
 }
+*/
