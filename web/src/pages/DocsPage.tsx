@@ -14,7 +14,7 @@ export default function DocsPage() {
     <div
       className={cn(
         "flex min-h-0 w-full min-w-0 flex-1 flex-col items-center justify-center",
-        "pt-1 sm:pt-2 text-text-tertiary",
+        "pt-1 sm:pt-2 text-muted-foreground",
       )}
     >
       <p className="text-sm">
@@ -38,7 +38,7 @@ const DS_BUTTON_OUTLINED_LINK_CN = cn(
   "group relative inline-grid grid-cols-[auto_1fr_auto] items-center",
   "px-[.9em_.75em] py-[1.25em] gap-2",
   "leading-0 font-bold tracking-[0.2em] uppercase",
-  "text-midground bg-transparent shadow-midground",
+  "text-foreground bg-transparent shadow-midground",
   "shadow-[inset_-1px_-1px_0_0_#00000080,inset_1px_1px_0_0_#ffffff80]",
 );
 
@@ -76,7 +76,7 @@ export default function DocsPage() {
         src={HERMES_DOCS_URL}
         className={cn(
           "min-h-0 w-full min-w-0 flex-1",
-          "rounded-sm border border-current/20",
+          "rounded-sm border border-border",
           // Docusaurus paints over a transparent <html> / <body> and
           // relies on the browser's canvas color (light by default) to
           // fill the viewport. Inheriting the dashboard's dark color

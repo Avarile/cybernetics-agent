@@ -40,17 +40,17 @@ import type {
 import { timeAgo } from "@/lib/utils";
 import { Markdown } from "@/components/Markdown";
 import { PlatformsCard } from "@/components/PlatformsCard";
-import { Toast } from "@nous-research/ui/ui/components/toast";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { Checkbox } from "@nous-research/ui/ui/components/checkbox";
-import { ListItem } from "@nous-research/ui/ui/components/list-item";
-import { Segmented } from "@nous-research/ui/ui/components/segmented";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { Badge } from "@nous-research/ui/ui/components/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@nous-research/ui/ui/components/card";
+import { Toast } from "@/components/ui";
+import { Button } from "@/components/ui";
+import { Checkbox } from "@/components/ui";
+import { ListItem } from "@/components/ui";
+import { Segmented } from "@/components/ui";
+import { Spinner } from "@/components/ui";
+import { Badge } from "@/components/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
-import { useConfirmDelete } from "@nous-research/ui/hooks/use-confirm-delete";
-import { Input } from "@nous-research/ui/ui/components/input";
+import { useConfirmDelete } from "@/hooks/useConfirmDelete";
+import { Input } from "@/components/ui";
 import {
   Dialog,
   DialogContent,
@@ -58,9 +58,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@nous-research/ui/ui/components/dialog";
+} from "@/components/ui";
 import { useSystemActions } from "@/contexts/useSystemActions";
-import { useToast } from "@nous-research/ui/hooks/use-toast";
+import { useToast } from "@/hooks/useToast";
 import { useI18n } from "@/i18n";
 import { usePageHeader } from "@/contexts/usePageHeader";
 import { PluginSlot } from "@/plugins";
@@ -99,7 +99,7 @@ function SnippetHighlight({ snippet }: { snippet: string }) {
     parts.push(snippet.slice(last));
   }
   return (
-    <p className="font-mondwest normal-case mt-0.5 min-w-0 max-w-full truncate text-xs text-text-secondary">
+    <p className="normal-case mt-0.5 min-w-0 max-w-full truncate text-xs text-muted-foreground">
       {parts}
     </p>
   );
@@ -314,7 +314,7 @@ function MessageBubble({
           </Badge>
         )}
         {msg.timestamp && (
-          <span className="text-xs text-text-tertiary">
+          <span className="text-xs text-muted-foreground">
             {timeAgo(msg.timestamp)}
           </span>
         )}
@@ -587,7 +587,7 @@ function SessionRow({
                   </div>
                 ) : (
                   <span
-                    className={`font-mondwest normal-case min-w-0 flex-1 truncate text-sm ${hasTitle ? "font-medium" : "text-muted-foreground italic"}`}
+                    className={`normal-case min-w-0 flex-1 truncate text-sm ${hasTitle ? "font-medium" : "text-muted-foreground italic"}`}
                   >
                     {hasTitle
                       ? session.title
@@ -1316,7 +1316,7 @@ export default function SessionsPage() {
       </Dialog>
 
       {stats && (
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border border-border bg-background-base/40 px-4 py-3">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-2 border border-border bg-background/40 px-4 py-3">
           <div className="flex flex-col">
             <span className="text-lg font-semibold tabular-nums leading-none">
               {stats.total}
@@ -1376,7 +1376,7 @@ export default function SessionsPage() {
       )}
 
       {activeAction && (
-        <div className="border border-border bg-background-base/50">
+        <div className="border border-border bg-background/50">
           <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
             <div className="flex items-center gap-2 min-w-0">
               {actionStatus?.running ? (
@@ -1389,7 +1389,7 @@ export default function SessionsPage() {
                 <Spinner className="shrink-0 text-[0.875rem] text-muted-foreground" />
               )}
 
-              <span className="text-xs font-mondwest tracking-[0.12em] truncate">
+              <span className="text-xs tracking-[0.12em] truncate">
                 {activeAction === "restart"
                   ? t.status.restartGateway
                   : t.status.updateCybernetics}
@@ -1421,7 +1421,7 @@ export default function SessionsPage() {
               ghost
               size="icon"
               onClick={dismissLog}
-              className="shrink-0 text-text-secondary hover:text-foreground"
+              className="shrink-0 text-muted-foreground hover:text-foreground"
               aria-label={t.common.close}
             >
               <X />
@@ -1493,7 +1493,7 @@ export default function SessionsPage() {
                 title={t.sessions.deleteEmpty}
               >
                 <Eraser className="h-3.5 w-3.5" />
-                <span className="font-mondwest normal-case text-xs">
+                <span className="normal-case text-xs">
                   {t.sessions.deleteEmpty} ({emptyCount})
                 </span>
               </Button>
@@ -1521,7 +1521,7 @@ export default function SessionsPage() {
             String(selectedIds.size),
           )}
         >
-          <span className="font-mondwest normal-case text-xs text-primary tabular-nums">
+          <span className="normal-case text-xs text-primary tabular-nums">
             {t.sessions.selectedCount.replace(
               "{count}",
               String(selectedIds.size),
@@ -1535,7 +1535,7 @@ export default function SessionsPage() {
               aria-label={t.sessions.selectAllOnPage}
               title={t.sessions.selectAllOnPage}
             >
-              <span className="font-mondwest normal-case text-xs">
+              <span className="normal-case text-xs">
                 {t.sessions.selectAllOnPage}
               </span>
             </Button>
@@ -1547,7 +1547,7 @@ export default function SessionsPage() {
             aria-label={t.sessions.clearSelection}
             title={t.sessions.clearSelection}
           >
-            <span className="font-mondwest normal-case text-xs">
+            <span className="normal-case text-xs">
               {t.sessions.clearSelection}
             </span>
           </Button>
@@ -1567,7 +1567,7 @@ export default function SessionsPage() {
             )}
           >
             <Trash2 className="h-3.5 w-3.5" />
-            <span className="font-mondwest normal-case text-xs">
+            <span className="normal-case text-xs">
               {t.sessions.deleteSelected.replace(
                 "{count}",
                 String(selectedIds.size),
@@ -1585,7 +1585,7 @@ export default function SessionsPage() {
               {search ? t.sessions.noMatch : t.sessions.noSessions}
             </p>
             {!search && (
-              <p className="text-xs mt-1 text-text-tertiary">
+              <p className="text-xs mt-1 text-muted-foreground">
                 {t.sessions.startConversation}
               </p>
             )}
@@ -1648,7 +1648,7 @@ export default function SessionsPage() {
                     className="flex min-w-0 max-w-full flex-col gap-2 border border-border p-3 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex min-w-0 flex-1 flex-col gap-1">
-                      <span className="font-mondwest normal-case min-w-0 truncate text-sm font-medium">
+                      <span className="normal-case min-w-0 truncate text-sm font-medium">
                         {s.title ?? t.common.untitled}
                       </span>
 
@@ -1661,7 +1661,7 @@ export default function SessionsPage() {
                       </span>
 
                       {s.preview && (
-                        <p className="font-mondwest normal-case min-w-0 max-w-full text-xs leading-snug text-text-tertiary [overflow-wrap:anywhere]">
+                        <p className="normal-case min-w-0 max-w-full text-xs leading-snug text-muted-foreground [overflow-wrap:anywhere]">
                           {s.preview}
                         </p>
                       )}

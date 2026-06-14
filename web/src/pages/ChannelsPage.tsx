@@ -14,15 +14,15 @@ import {
   X,
 } from "lucide-react";
 import * as QRCode from "qrcode";
-import { Badge } from "@nous-research/ui/ui/components/badge";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { Card, CardContent } from "@nous-research/ui/ui/components/card";
-import { Input } from "@nous-research/ui/ui/components/input";
-import { Label } from "@nous-research/ui/ui/components/label";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { Switch } from "@nous-research/ui/ui/components/switch";
-import { Toast } from "@nous-research/ui/ui/components/toast";
-import { useToast } from "@nous-research/ui/hooks/use-toast";
+import { Badge } from "@/components/ui";
+import { Button } from "@/components/ui";
+import { Card, CardContent } from "@/components/ui";
+import { Input } from "@/components/ui";
+import { Label } from "@/components/ui";
+import { Spinner } from "@/components/ui";
+import { Switch } from "@/components/ui";
+import { Toast } from "@/components/ui";
+import { useToast } from "@/hooks/useToast";
 import { api } from "@/lib/api";
 import type {
   MessagingPlatform,
@@ -295,7 +295,7 @@ export default function ChannelsPage() {
             <header className="p-5 pb-3 border-b border-border">
               <h2
                 id="channel-config-title"
-                className="font-mondwest text-display text-base tracking-wider"
+                className="text-base tracking-wider"
               >
                 Configure {editing.name}
               </h2>
@@ -389,7 +389,7 @@ export default function ChannelsPage() {
                     />
                     <div className="flex flex-col gap-0.5 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-mondwest normal-case text-sm font-medium">
+                        <span className="normal-case text-sm font-medium">
                           {platform.name}
                         </span>
                         <Badge tone={badge.tone}>{badge.label}</Badge>

@@ -21,11 +21,11 @@ import type {
 } from "@/lib/api";
 import { timeAgo, cn, themedBody } from "@/lib/utils";
 import { formatTokenCount } from "@/lib/format";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { Stats } from "@nous-research/ui/ui/components/stats";
-import { Card, CardContent, CardHeader, CardTitle } from "@nous-research/ui/ui/components/card";
-import { Badge } from "@nous-research/ui/ui/components/badge";
+import { Button } from "@/components/ui";
+import { Spinner } from "@/components/ui";
+import { Stats } from "@/components/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { Badge } from "@/components/ui";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { useModalBehavior } from "@/hooks/useModalBehavior";
 import { usePageHeader } from "@/contexts/usePageHeader";
@@ -134,7 +134,7 @@ function TokenBar({
       </div>
 
       {/* Legend */}
-      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-text-secondary">
+      <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
         {segments.map((s, i) => (
           <span key={i} className="flex items-center gap-1">
             <span
@@ -179,7 +179,7 @@ function CapabilityBadges({
         </span>
       )}
       {capabilities.model_family && (
-        <span className="inline-flex items-center bg-muted px-1.5 py-0.5 text-xs font-medium text-text-secondary">
+        <span className="inline-flex items-center bg-muted px-1.5 py-0.5 text-xs font-medium text-muted-foreground">
           {capabilities.model_family}
         </span>
       )}
@@ -289,13 +289,13 @@ function UseAsMenu({
               Main model
             </span>
             {isMain && (
-              <span className="text-display text-xs tracking-wider text-primary">
+              <span className="text-xs tracking-wider text-primary">
                 current
               </span>
             )}
           </button>
 
-          <div className="border-t border-border/50 px-3 py-1.5 text-display text-xs tracking-wider text-text-tertiary">
+          <div className="border-t border-border/50 px-3 py-1.5 text-xs tracking-wider text-muted-foreground">
             Auxiliary task
           </div>
 
@@ -318,7 +318,7 @@ function UseAsMenu({
             >
               <span>{t.label}</span>
               {mainAuxTask === t.key && (
-                <span className="text-display text-xs tracking-wider text-primary">
+                <span className="text-xs tracking-wider text-primary">
                   current
                 </span>
               )}
@@ -395,19 +395,19 @@ function ModelCard({
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-text-tertiary text-xs font-mono">
+              <span className="text-muted-foreground text-xs font-mono">
                 #{rank}
               </span>
               <CardTitle className="text-sm font-mono-ui truncate">
                 {shortModelName(entry.model)}
               </CardTitle>
               {isMain && (
-                <span className="inline-flex items-center gap-0.5 bg-primary/15 px-1.5 py-0.5 text-display text-xs font-medium tracking-wider text-primary">
+                <span className="inline-flex items-center gap-0.5 bg-primary/15 px-1.5 py-0.5 text-xs font-medium tracking-wider text-primary">
                   <Star className="h-2.5 w-2.5" /> main
                 </span>
               )}
               {mainAuxTask && (
-                <span className="inline-flex items-center bg-purple-500/10 px-1.5 py-0.5 text-display text-xs font-medium tracking-wider text-purple-600 dark:text-purple-400">
+                <span className="inline-flex items-center bg-purple-500/10 px-1.5 py-0.5 text-xs font-medium tracking-wider text-purple-600 dark:text-purple-400">
                   aux · {mainAuxTask}
                 </span>
               )}
@@ -419,12 +419,12 @@ function ModelCard({
                 </Badge>
               )}
               {caps.context_window && caps.context_window > 0 && (
-                <span className="text-xs text-text-secondary">
+                <span className="text-xs text-muted-foreground">
                   {formatTokenCount(caps.context_window)} ctx
                 </span>
               )}
               {caps.max_output_tokens && caps.max_output_tokens > 0 && (
-                <span className="text-xs text-text-secondary">
+                <span className="text-xs text-muted-foreground">
                   {formatTokenCount(caps.max_output_tokens)} out
                 </span>
               )}
@@ -436,7 +436,7 @@ function ModelCard({
                 <div className="text-xs font-mono font-semibold">
                   {formatTokens(totalTokens)}
                 </div>
-                <div className="text-xs text-text-tertiary">
+                <div className="text-xs text-muted-foreground">
                   {t.models.tokens}
                 </div>
               </div>
@@ -446,7 +446,7 @@ function ModelCard({
                   <div className="text-xs font-mono font-semibold">
                     {entry.sessions}
                   </div>
-                  <div className="text-xs text-text-tertiary">
+                  <div className="text-xs text-muted-foreground">
                     {t.models.sessions}
                   </div>
                 </div>
@@ -475,7 +475,7 @@ function ModelCard({
             <div className="grid grid-cols-3 gap-2 text-xs">
               <div className="text-center">
                 <div className="font-mono font-semibold">{entry.sessions}</div>
-                <div className="text-xs text-text-tertiary">
+                <div className="text-xs text-muted-foreground">
                   {t.models.sessions}
                 </div>
               </div>
@@ -483,7 +483,7 @@ function ModelCard({
                 <div className="font-mono font-semibold">
                   {formatTokens(entry.avg_tokens_per_session)}
                 </div>
-                <div className="text-xs text-text-tertiary">
+                <div className="text-xs text-muted-foreground">
                   {t.models.avgPerSession}
                 </div>
               </div>
@@ -491,7 +491,7 @@ function ModelCard({
                 <div className="font-mono font-semibold">
                   {entry.api_calls > 0 ? formatTokens(entry.api_calls) : "—"}
                 </div>
-                <div className="text-xs text-text-tertiary">
+                <div className="text-xs text-muted-foreground">
                   {t.models.apiCalls}
                 </div>
               </div>
@@ -499,7 +499,7 @@ function ModelCard({
           </>
         )}
 
-        <div className="flex items-center justify-between text-xs text-text-secondary border-t border-border/30 pt-2">
+        <div className="flex items-center justify-between text-xs text-muted-foreground border-t border-border/30 pt-2">
           <div className="flex items-center gap-3">
             {showTokens && entry.estimated_cost > 0 && (
               <span className="flex items-center gap-0.5">
@@ -589,7 +589,7 @@ function AuxiliaryTasksModal({
           <div className="flex items-center justify-between gap-3 pr-8">
             <h2
               id="aux-modal-title"
-              className="font-mondwest text-display text-base tracking-wider"
+              className="text-base tracking-wider"
             >
               Auxiliary Tasks
             </h2>
@@ -604,7 +604,7 @@ function AuxiliaryTasksModal({
               Reset all to auto
             </Button>
           </div>
-          <p className="text-xs text-text-secondary mt-2">
+          <p className="text-xs text-muted-foreground mt-2">
             Auxiliary tasks handle side-jobs like vision, session search, and
             compression. <span className="font-mono">auto</span> means
             &quot;use the main model&quot;. Override per-task when you want a
@@ -625,11 +625,11 @@ function AuxiliaryTasksModal({
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-2">
                     <span className="text-xs font-medium">{t.label}</span>
-                    <span className="text-xs text-text-tertiary">
+                    <span className="text-xs text-muted-foreground">
                       {t.hint}
                     </span>
                   </div>
-                  <div className="text-xs font-mono text-text-secondary truncate">
+                  <div className="text-xs font-mono text-muted-foreground truncate">
                     {isAuto
                       ? "auto (use main model)"
                       : `${cur?.provider} · ${cur?.model || "(provider default)"}`}
@@ -736,7 +736,7 @@ function ModelSettingsPanel({
         <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
           <Settings2 className="h-4 w-4 shrink-0 text-muted-foreground" />
           <CardTitle className="text-sm">Model Settings</CardTitle>
-          <span className="max-w-full min-w-0 text-xs text-text-secondary [overflow-wrap:anywhere]">
+          <span className="max-w-full min-w-0 text-xs text-muted-foreground [overflow-wrap:anywhere]">
             applies to new sessions
           </span>
         </div>
@@ -748,11 +748,11 @@ function ModelSettingsPanel({
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-0.5">
               <Star className="h-3 w-3 text-primary" />
-              <span className="text-display text-xs font-medium tracking-wider">
+              <span className="text-xs font-medium tracking-wider">
                 Main model
               </span>
             </div>
-            <div className="text-xs font-mono text-text-secondary truncate">
+            <div className="text-xs font-mono text-muted-foreground truncate">
               {mainProv || "(unset)"}
               {mainProv && mainModel && " · "}
               {mainModel || "(unset)"}
@@ -771,12 +771,12 @@ function ModelSettingsPanel({
         <div className="flex min-w-0 flex-col gap-2 bg-muted/20 border border-border/50 px-3 py-2 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2 mb-0.5">
-              <Cpu className="h-3 w-3 text-text-tertiary" />
-              <span className="text-display text-xs font-medium tracking-wider">
+              <Cpu className="h-3 w-3 text-muted-foreground" />
+              <span className="text-xs font-medium tracking-wider">
                 Auxiliary tasks
               </span>
             </div>
-            <div className="text-xs font-mono text-text-secondary truncate">
+            <div className="text-xs font-mono text-muted-foreground truncate">
               {auxOverrideCount > 0
                 ? `${auxOverrideCount} override${auxOverrideCount > 1 ? "s" : ""} · ${AUX_TASKS.length - auxOverrideCount} auto`
                 : `${AUX_TASKS.length} tasks · all auto`}
@@ -1005,7 +1005,7 @@ export default function ModelsPage() {
               />
               </div>
               {!showTokens && (
-                <p className="mt-4 text-xs text-text-tertiary leading-relaxed">
+                <p className="mt-4 text-xs text-muted-foreground leading-relaxed">
                   Token & cost analytics are hidden because the local counts
                   exclude auxiliary calls (compression, vision, web extract,
                   …) and provider retries, so they diverge from your provider
@@ -1056,7 +1056,7 @@ export default function ModelsPage() {
                 <div className="flex flex-col items-center text-muted-foreground">
                   <Cpu className="h-8 w-8 mb-3 opacity-40" />
                   <p className="text-sm font-medium">{t.models.noModelsData}</p>
-                  <p className="text-xs mt-1 text-text-tertiary">
+                  <p className="text-xs mt-1 text-muted-foreground">
                     {t.models.startSession}
                   </p>
                 </div>

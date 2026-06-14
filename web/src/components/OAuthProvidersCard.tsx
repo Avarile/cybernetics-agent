@@ -7,18 +7,18 @@ import {
   Terminal,
 } from "lucide-react";
 import { api, type OAuthProvider } from "@/lib/api";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { CopyButton } from "@nous-research/ui/ui/components/command-block";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
+import { Button } from "@/components/ui";
+import { CopyButton } from "@/components/ui";
+import { Spinner } from "@/components/ui";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@nous-research/ui/ui/components/card";
-import { Badge } from "@nous-research/ui/ui/components/badge";
-import { ConfirmDialog } from "@nous-research/ui/ui/components/confirm-dialog";
+} from "@/components/ui";
+import { Badge } from "@/components/ui";
+import { ConfirmDialog } from "@/components/ui";
 import { OAuthLoginModal } from "@/components/OAuthLoginModal";
 import { useI18n } from "@/i18n";
 
@@ -174,11 +174,11 @@ export function OAuthProvidersCard({ onError, onSuccess }: Props) {
                       )}
                     </div>
                     {p.status.logged_in && p.status.token_preview && (
-                      <span className="truncate text-xs font-mono-ui text-text-secondary">
-                        <span className="text-text-tertiary">token </span>
+                      <span className="truncate text-xs font-mono-ui text-muted-foreground">
+                        <span className="text-muted-foreground">token </span>
                         {p.status.token_preview}
                         {p.status.source_label && (
-                          <span className="text-text-tertiary">
+                          <span className="text-muted-foreground">
                             {" "}
                             · {p.status.source_label}
                           </span>
@@ -187,7 +187,7 @@ export function OAuthProvidersCard({ onError, onSuccess }: Props) {
                     )}
                     {!p.status.logged_in && (
                       <>
-                        <span className="text-xs text-text-secondary">
+                        <span className="text-xs text-muted-foreground">
                           {t.oauth.notConnected.split("{command}")[0].trimEnd()}
                           {t.oauth.notConnected.split("{command}")[1] ?? ""}
                         </span>
@@ -249,7 +249,7 @@ export function OAuthProvidersCard({ onError, onSuccess }: Props) {
                     </Button>
                   )}
                   {p.status.logged_in && p.flow === "external" && (
-                    <span className="text-xs text-text-tertiary italic px-2">
+                    <span className="text-xs text-muted-foreground italic px-2">
                       <Terminal className="h-3 w-3 inline mr-0.5" />
                       {t.oauth.managedExternally}
                     </span>

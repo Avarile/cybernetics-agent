@@ -22,8 +22,8 @@ import { WebLinksAddon } from "@xterm/addon-web-links";
 import { WebglAddon } from "@xterm/addon-webgl";
 import { Terminal } from "@xterm/xterm";
 import "@xterm/xterm/css/xterm.css";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { Typography } from "@nous-research/ui/ui/components/typography/index";
+import { Button } from "@/components/ui";
+import { Typography } from "@/components/ui";
 import { HERMES_BASE_PATH, buildWsAuthParam } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Copy, PanelRight, X } from "lucide-react";
@@ -259,9 +259,9 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
         aria-expanded={mobilePanelOpen}
         aria-controls="chat-side-panel"
         className={cn(
-          "shrink-0 rounded border border-current/20",
+          "shrink-0 rounded border border-border",
           "px-2 py-1 text-xs font-medium tracking-wide",
-          "text-text-secondary hover:text-midground hover:bg-midground/5",
+          "text-muted-foreground hover:text-foreground hover:bg-primary/5",
         )}
       >
         <span className="inline-flex items-center gap-1.5">
@@ -817,9 +817,9 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
           role="complementary"
           aria-label={modelToolsLabel}
           className={cn(
-            "font-mondwest fixed top-0 right-0 z-[60] flex h-dvh max-h-dvh w-64 min-w-0 flex-col antialiased",
-            "border-l border-current/20 text-midground",
-            "bg-background-base/95 backdrop-blur-sm",
+            "fixed top-0 right-0 z-[60] flex h-dvh max-h-dvh w-64 min-w-0 flex-col antialiased",
+            "border-l border-border text-foreground",
+            "bg-background/95 backdrop-blur-sm",
             "transition-transform duration-200 ease-out",
             "[background:var(--component-sidebar-background)]",
             "[clip-path:var(--component-sidebar-clip-path)]",
@@ -831,13 +831,13 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
         >
           <div
             className={cn(
-              "flex h-14 shrink-0 items-center justify-between gap-2 border-b border-current/20 px-5",
+              "flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border px-5",
             )}
           >
             <Typography
               mondwest
-              className="text-display font-bold text-[1.125rem] leading-[0.95] tracking-[0.0525rem] text-midground"
-              style={{ mixBlendMode: "plus-lighter" }}
+              className="font-bold text-[1.125rem] leading-[0.95] tracking-[0.0525rem] text-foreground"
+              style={{ mixBlendMode: "normal" }}
             >
               {t.app.modelToolsSheetTitle}
               <br />
@@ -849,7 +849,7 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
               size="icon"
               onClick={closeMobilePanel}
               aria-label={t.app.closeModelTools}
-              className="text-text-secondary hover:text-midground"
+              className="text-muted-foreground hover:text-foreground"
             >
               <X />
             </Button>
@@ -858,7 +858,7 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
           <div
             className={cn(
               "min-h-0 flex-1 overflow-y-auto overflow-x-hidden",
-              "border-t border-current/10",
+              "border-t border-border",
             )}
           >
             <ChatSidebar channel={channel} />
@@ -903,9 +903,9 @@ export default function ChatPage({ isActive = true }: { isActive?: boolean }) {
             className={cn(
               "absolute z-10",
               "normal-case tracking-normal font-normal",
-              "rounded border border-current/30",
+              "rounded border border-border",
               "bg-black/20 backdrop-blur-sm",
-              "opacity-70 hover:opacity-100 hover:border-current/60",
+              "opacity-70 hover:opacity-100 hover:border-border",
               "transition-opacity duration-150",
               "bottom-2 right-2 px-2 py-1 text-xs sm:bottom-3 sm:right-3 sm:px-2.5 sm:py-1.5",
               "lg:bottom-4 lg:right-4",

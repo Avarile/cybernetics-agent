@@ -4,18 +4,18 @@ import type { Translations } from "@/i18n/types";
 import { Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import type { HubAgentPluginRow, PluginsHubResponse } from "@/lib/api";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { Badge } from "@nous-research/ui/ui/components/badge";
-import { Select, SelectOption } from "@nous-research/ui/ui/components/select";
-import { Switch } from "@nous-research/ui/ui/components/switch";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { CommandBlock } from "@nous-research/ui/ui/components/command-block";
-import { Card, CardContent, CardHeader, CardTitle } from "@nous-research/ui/ui/components/card";
-import { ConfirmDialog } from "@nous-research/ui/ui/components/confirm-dialog";
-import { Input } from "@nous-research/ui/ui/components/input";
-import { Label } from "@nous-research/ui/ui/components/label";
-import { useToast } from "@nous-research/ui/hooks/use-toast";
-import { Toast } from "@nous-research/ui/ui/components/toast";
+import { Button } from "@/components/ui";
+import { Badge } from "@/components/ui";
+import { Select, SelectOption } from "@/components/ui";
+import { Switch } from "@/components/ui";
+import { Spinner } from "@/components/ui";
+import { CommandBlock } from "@/components/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { ConfirmDialog } from "@/components/ui";
+import { Input } from "@/components/ui";
+import { Label } from "@/components/ui";
+import { useToast } from "@/hooks/useToast";
+import { Toast } from "@/components/ui";
 import { useI18n } from "@/i18n";
 import { PluginSlot } from "@/plugins";
 import { cn } from "@/lib/utils";
@@ -158,7 +158,7 @@ export default function PluginsPage() {
           <Card>
             <CardHeader>
               <CardTitle>{t.pluginsPage.providersHeading}</CardTitle>
-              <p className="text-xs tracking-[0.08em] text-text-tertiary">
+              <p className="text-xs tracking-[0.08em] text-muted-foreground">
                 {t.pluginsPage.providersHint}
               </p>
             </CardHeader>
@@ -225,7 +225,7 @@ export default function PluginsPage() {
         <Card>
           <CardHeader>
             <CardTitle>{t.pluginsPage.installHeading}</CardTitle>
-            <p className="text-xs tracking-[0.08em] text-text-tertiary">
+            <p className="text-xs tracking-[0.08em] text-muted-foreground">
               {t.pluginsPage.installHint}
             </p>
           </CardHeader>
@@ -254,7 +254,7 @@ export default function PluginsPage() {
 
                 <Switch checked={installForce} onCheckedChange={setInstallForce} />
 
-                <span className="text-xs tracking-[0.06em] text-text-secondary">
+                <span className="text-xs tracking-[0.06em] text-muted-foreground">
                   {t.pluginsPage.forceReinstall}
                 </span>
               </div>
@@ -263,7 +263,7 @@ export default function PluginsPage() {
 
                 <Switch checked={installEnable} onCheckedChange={setInstallEnable} />
 
-                <span className="text-xs tracking-[0.06em] text-text-secondary">
+                <span className="text-xs tracking-[0.06em] text-muted-foreground">
                   {t.pluginsPage.enableAfterInstall}
                 </span>
               </div>
@@ -279,11 +279,11 @@ export default function PluginsPage() {
               {t.pluginsPage.installBtn}
             </Button>
 
-            <p className="text-xs tracking-[0.06em] text-text-tertiary">
+            <p className="text-xs tracking-[0.06em] text-muted-foreground">
               {t.pluginsPage.rescanHint}
             </p>
 
-            <p className="text-xs tracking-[0.06em] text-text-tertiary">
+            <p className="text-xs tracking-[0.06em] text-muted-foreground">
               {t.pluginsPage.removeHint}
             </p>
           </CardContent>
@@ -291,20 +291,20 @@ export default function PluginsPage() {
 
         <div className="flex flex-col gap-3">
 
-          <h3 className="font-mondwest text-display text-xs tracking-[0.12em] text-text-secondary">
+          <h3 className="text-xs tracking-[0.12em] text-muted-foreground">
             {t.pluginsPage.pluginListHeading}
           </h3>
 
           {loading ? (
 
-            <div className="flex items-center gap-2 py-8 text-xs text-text-tertiary">
+            <div className="flex items-center gap-2 py-8 text-xs text-muted-foreground">
 
               <Spinner />
               <span>{t.common.loading}</span>
             </div>
           ) : rows.length === 0 ? (
 
-            <p className="text-xs text-text-tertiary">{t.common.noResults}</p>
+            <p className="text-xs text-muted-foreground">{t.common.noResults}</p>
           ) : (
 
             <ul className="flex flex-col gap-3">
@@ -329,15 +329,15 @@ export default function PluginsPage() {
 
           <div className="flex flex-col gap-3 opacity-95">
 
-            <h3 className="font-mondwest text-display text-xs tracking-[0.12em] text-text-secondary">
+            <h3 className="text-xs tracking-[0.12em] text-muted-foreground">
               {t.pluginsPage.orphanHeading}
             </h3>
 
-            <ul className="flex flex-col gap-2 rounded border border-current/15 p-4">
+            <ul className="flex flex-col gap-2 rounded border border-border p-4">
 
               {hub!.orphan_dashboard_plugins.map((m) => (
 
-                <li className="text-xs text-text-secondary" key={m.name}>
+                <li className="text-xs text-muted-foreground" key={m.name}>
 
 
                   {m.label ?? m.name} — {m.description || m.tab?.path}
@@ -466,8 +466,8 @@ function PluginRowCard(props: PluginRowCardProps) {
               <Link
                 className={cn(
                   "inline-flex items-center rounded-none px-3 py-1.5",
-                  "border border-current/25 hover:bg-current/10",
-                  "font-mondwest text-display text-xs tracking-[0.1em]",
+                  "border border-border hover:bg-muted",
+                  "text-xs tracking-[0.1em]",
                 )}
                 to={tabPath}
               >
@@ -532,14 +532,14 @@ function PluginRowCard(props: PluginRowCardProps) {
         </div>
 
         {row.description ? (
-          <p className="min-w-0 w-full text-xs tracking-[0.06em] text-text-secondary break-words">
+          <p className="min-w-0 w-full text-xs tracking-[0.06em] text-muted-foreground break-words">
             {row.description}
           </p>
         ) : null}
 
         {dm?.slots?.length ? (
 
-          <p className="text-xs tracking-[0.05em] text-text-tertiary">
+          <p className="text-xs tracking-[0.05em] text-muted-foreground">
             {t.pluginsPage.dashboardSlots}: {dm.slots.join(", ")}
           </p>
         ) : null}
@@ -554,7 +554,7 @@ function PluginRowCard(props: PluginRowCardProps) {
         {!row.has_dashboard_manifest && !dm ? (
 
 
-          <p className="text-xs italic text-text-disabled">
+          <p className="text-xs italic text-muted-foreground/60">
             {t.pluginsPage.noDashboardTab}
           </p>
         ) : null}

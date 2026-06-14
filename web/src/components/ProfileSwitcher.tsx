@@ -22,7 +22,7 @@ export function ProfileSwitcher({ collapsed }: { collapsed?: boolean }) {
   return (
     <div
       className={cn(
-        "flex items-center gap-2 border-b border-current/10 px-3 py-2",
+        "flex items-center gap-2 border-b border-border px-3 py-2",
         collapsed && "lg:justify-center lg:px-0",
       )}
       title={t.app.managingProfile ?? "Managing profile"}
@@ -30,7 +30,7 @@ export function ProfileSwitcher({ collapsed }: { collapsed?: boolean }) {
       <Users
         className={cn(
           "h-3.5 w-3.5 shrink-0",
-          isOther ? "text-amber-300" : "text-text-tertiary",
+          isOther ? "text-amber-300" : "text-muted-foreground",
         )}
       />
       <select
@@ -39,7 +39,7 @@ export function ProfileSwitcher({ collapsed }: { collapsed?: boolean }) {
           "h-7 w-full min-w-0 rounded-none border bg-background px-1 text-xs",
           isOther
             ? "border-amber-500/50 text-amber-300"
-            : "border-border text-text-secondary",
+            : "border-border text-muted-foreground",
           collapsed && "lg:hidden",
         )}
         value={profile}

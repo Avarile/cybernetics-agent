@@ -41,23 +41,23 @@ import type {
 import { useProfileScope } from "@/contexts/useProfileScope";
 import { ToolsetConfigDrawer } from "@/components/ToolsetConfigDrawer";
 import { SkillEditorDialog } from "@/components/SkillEditorDialog";
-import { useToast } from "@nous-research/ui/hooks/use-toast";
-import { Toast } from "@nous-research/ui/ui/components/toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@nous-research/ui/ui/components/card";
-import { Badge } from "@nous-research/ui/ui/components/badge";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { ListItem } from "@nous-research/ui/ui/components/list-item";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { Switch } from "@nous-research/ui/ui/components/switch";
+import { useToast } from "@/hooks/useToast";
+import { Toast } from "@/components/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { Badge } from "@/components/ui";
+import { Button } from "@/components/ui";
+import { ListItem } from "@/components/ui";
+import { Spinner } from "@/components/ui";
+import { Switch } from "@/components/ui";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@nous-research/ui/ui/components/dialog";
+} from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { Input } from "@nous-research/ui/ui/components/input";
+import { Input } from "@/components/ui";
 import { useI18n } from "@/i18n";
 import { usePageHeader } from "@/contexts/usePageHeader";
 import { PluginSlot } from "@/plugins";
@@ -355,8 +355,8 @@ export default function SkillsPage() {
           <div className="sm:sticky sm:top-0">
             <div className="flex flex-col rounded-none border border-border bg-muted/20">
               <div className="hidden sm:flex items-center gap-2 px-3 py-2 border-b border-border">
-                <Filter className="h-3 w-3 text-text-tertiary" />
-                <span className="font-mondwest text-display text-xs tracking-[0.12em] text-text-secondary">
+                <Filter className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs tracking-[0.12em] text-muted-foreground">
                   {t.skills.filters}
                 </span>
               </div>
@@ -396,7 +396,7 @@ export default function SkillsPage() {
                 !isSearching &&
                 allCategories.length > 0 && (
                   <div className="hidden sm:flex flex-col border-t border-border">
-                    <div className="px-3 pt-2 pb-1 font-mondwest text-display text-xs tracking-[0.12em] text-text-tertiary">
+                    <div className="px-3 pt-2 pb-1 text-xs tracking-[0.12em] text-muted-foreground">
                       {t.skills.categories}
                     </div>
                     <div className="flex flex-col p-2 pt-1 gap-px max-h-[calc(100vh-340px)] overflow-y-auto">
@@ -416,8 +416,8 @@ export default function SkillsPage() {
                             <span
                               className={`text-xs tabular-nums ${
                                 isActive
-                                  ? "text-text-secondary"
-                                  : "text-text-tertiary"
+                                  ? "text-muted-foreground"
+                                  : "text-muted-foreground"
                               }`}
                             >
                               {count}
@@ -561,7 +561,7 @@ export default function SkillsPage() {
                                     : t.common.inactive}
                                 </Badge>
                               </div>
-                              <p className="text-xs text-text-secondary mb-2">
+                              <p className="text-xs text-muted-foreground mb-2">
                                 {ts.description}
                               </p>
                               {ts.enabled && !ts.configured && (
@@ -583,7 +583,7 @@ export default function SkillsPage() {
                                 </div>
                               )}
                               {ts.tools.length === 0 && (
-                                <span className="text-xs text-text-tertiary">
+                                <span className="text-xs text-muted-foreground">
                                   {ts.enabled
                                     ? t.skills.toolsetLabel.replace(
                                         "{name}",
@@ -687,7 +687,7 @@ function PanelItem({ active, icon: Icon, label, onClick }: PanelItemProps) {
       onClick={onClick}
       className={cn(
         "rounded-none whitespace-nowrap px-2.5 py-1.5",
-        "font-mondwest text-[0.7rem] tracking-[0.08em] uppercase",
+        "text-[0.7rem] tracking-[0.08em] uppercase",
         active && "bg-foreground/90 text-background hover:text-background",
       )}
     >
@@ -985,10 +985,10 @@ function HubBrowser({
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-2 px-1">
                 <Sparkles className="h-3.5 w-3.5 text-primary" />
-                <span className="font-mondwest text-display text-xs tracking-[0.12em] text-text-secondary uppercase">
+                <span className="text-xs tracking-[0.12em] text-muted-foreground uppercase">
                   Featured skills
                 </span>
-                <span className="text-xs text-text-tertiary">
+                <span className="text-xs text-muted-foreground">
                   from the Cybernetics index — search above for thousands more
                 </span>
               </div>
@@ -1086,7 +1086,7 @@ function ConnectedHubs({
   }
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className="flex items-center gap-1 text-xs text-text-tertiary">
+      <span className="flex items-center gap-1 text-xs text-muted-foreground">
         <Globe className="h-3 w-3" />
         Connected hubs:
       </span>
@@ -1130,7 +1130,7 @@ function SearchMeta({
 }) {
   const entries = Object.entries(sourceCounts).filter(([, n]) => n > 0);
   return (
-    <div className="flex flex-wrap items-center gap-2 px-1 text-xs text-text-tertiary">
+    <div className="flex flex-wrap items-center gap-2 px-1 text-xs text-muted-foreground">
       <Badge tone="secondary" className="text-xs">
         {count} result{count !== 1 ? "s" : ""}
       </Badge>
@@ -1192,20 +1192,20 @@ function HubResultCard({
               </Badge>
             )}
           </div>
-          <p className="text-xs text-text-secondary line-clamp-2">
+          <p className="text-xs text-muted-foreground line-clamp-2">
             {result.description}
           </p>
           <div className="flex flex-wrap items-center gap-1 mt-1">
             {result.tags.slice(0, 5).map((tag) => (
               <span
                 key={tag}
-                className="text-[0.65rem] font-mono text-text-tertiary border border-border px-1 py-px"
+                className="text-[0.65rem] font-mono text-muted-foreground border border-border px-1 py-px"
               >
                 {tag}
               </span>
             ))}
           </div>
-          <p className="text-xs font-mono text-text-tertiary truncate mt-1">
+          <p className="text-xs font-mono text-muted-foreground truncate mt-1">
             {result.identifier}
           </p>
         </button>
@@ -1312,8 +1312,8 @@ function SkillDetailDialog({
         </DialogHeader>
 
         <div className="mt-1 flex flex-col gap-1">
-          <p className="text-xs text-text-secondary">{result.description}</p>
-          <p className="text-xs font-mono text-text-tertiary truncate">
+          <p className="text-xs text-muted-foreground">{result.description}</p>
+          <p className="text-xs font-mono text-muted-foreground truncate">
             {result.identifier}
           </p>
         </div>
@@ -1385,7 +1385,7 @@ function SkillDetailDialog({
                     {preview.tags.map((tag) => (
                       <span
                         key={tag}
-                        className="text-[0.65rem] font-mono text-text-tertiary border border-border px-1 py-px"
+                        className="text-[0.65rem] font-mono text-muted-foreground border border-border px-1 py-px"
                       >
                         {tag}
                       </span>
@@ -1393,14 +1393,14 @@ function SkillDetailDialog({
                   </div>
                 )}
                 {preview.files.length > 0 && (
-                  <div className="text-xs text-text-tertiary">
-                    <span className="font-mondwest tracking-[0.1em] uppercase">
+                  <div className="text-xs text-muted-foreground">
+                    <span className="tracking-[0.1em] uppercase">
                       Files:{" "}
                     </span>
                     <span className="font-mono">{preview.files.join("  ")}</span>
                   </div>
                 )}
-                <pre className="whitespace-pre-wrap break-words bg-background/50 border border-border p-3 text-xs font-mono text-text-secondary leading-relaxed">
+                <pre className="whitespace-pre-wrap break-words bg-background/50 border border-border p-3 text-xs font-mono text-muted-foreground leading-relaxed">
                   {(preview.skill_md || "").trim() || "(SKILL.md is empty)"}
                 </pre>
               </div>
@@ -1480,7 +1480,7 @@ function ScanPanel({
               {scan.verdict}
             </Badge>
           </div>
-          <span className="text-xs text-text-tertiary">
+          <span className="text-xs text-muted-foreground">
             {scan.trust_level} source · {scan.findings.length} finding
             {scan.findings.length !== 1 ? "s" : ""}
           </span>
@@ -1509,7 +1509,7 @@ function ScanPanel({
         )}
       </div>
 
-      <p className="text-xs text-text-tertiary">{scan.policy_reason}</p>
+      <p className="text-xs text-muted-foreground">{scan.policy_reason}</p>
 
       {/* Findings */}
       {scan.findings.length > 0 && (
@@ -1522,11 +1522,11 @@ function ScanPanel({
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-medium">{f.category}</span>
-                  <span className="text-xs font-mono text-text-tertiary truncate">
+                  <span className="text-xs font-mono text-muted-foreground truncate">
                     {f.file}:{f.line}
                   </span>
                 </div>
-                <p className="text-xs text-text-secondary">{f.description}</p>
+                <p className="text-xs text-muted-foreground">{f.description}</p>
               </div>
             </div>
           ))}

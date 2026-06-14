@@ -7,13 +7,13 @@ import {
 } from "react";
 import { FileText, RefreshCw } from "lucide-react";
 import { api } from "@/lib/api";
-import { Badge } from "@nous-research/ui/ui/components/badge";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { FilterGroup, Segmented } from "@nous-research/ui/ui/components/segmented";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { Switch } from "@nous-research/ui/ui/components/switch";
-import { Card, CardContent, CardHeader, CardTitle } from "@nous-research/ui/ui/components/card";
-import { Label } from "@nous-research/ui/ui/components/label";
+import { Badge } from "@/components/ui";
+import { Button } from "@/components/ui";
+import { FilterGroup, Segmented } from "@/components/ui";
+import { Spinner } from "@/components/ui";
+import { Switch } from "@/components/ui";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
+import { Label } from "@/components/ui";
 import { useI18n } from "@/i18n";
 import { usePageHeader } from "@/contexts/usePageHeader";
 import { PluginSlot } from "@/plugins";
@@ -40,7 +40,7 @@ const LINE_COLORS: Record<string, string> = {
   error: "text-destructive",
   warning: "text-warning",
   info: "text-foreground",
-  debug: "text-text-tertiary",
+  debug: "text-muted-foreground",
 };
 
 const formatFilterLabel = (value: string) => value.toUpperCase();

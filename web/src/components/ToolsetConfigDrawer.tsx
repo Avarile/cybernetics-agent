@@ -7,14 +7,14 @@ import type {
   ToolsetInfo,
   ToolsetProvider,
 } from "@/lib/api";
-import { useToast } from "@nous-research/ui/hooks/use-toast";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { Input } from "@nous-research/ui/ui/components/input";
-import { Label } from "@nous-research/ui/ui/components/label";
-import { Badge } from "@nous-research/ui/ui/components/badge";
-import { Switch } from "@nous-research/ui/ui/components/switch";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { Toast } from "@nous-research/ui/ui/components/toast";
+import { useToast } from "@/hooks/useToast";
+import { Button } from "@/components/ui";
+import { Input } from "@/components/ui";
+import { Label } from "@/components/ui";
+import { Badge } from "@/components/ui";
+import { Switch } from "@/components/ui";
+import { Spinner } from "@/components/ui";
+import { Toast } from "@/components/ui";
 import { cn, themedBody } from "@/lib/utils";
 
 interface Props {
@@ -238,7 +238,7 @@ export function ToolsetConfigDrawer({ toolset, profile, onClose, onChanged }: Pr
         {/* Header — toolset identity + enable toggle */}
         <header className="p-5 pb-3 border-b border-border">
           <div className="flex items-center gap-3 pr-8">
-            <span className="font-mondwest text-display text-base tracking-wider">
+            <span className="text-base tracking-wider">
               {labelText}
             </span>
             <Badge tone={enabled ? "success" : "outline"} className="text-xs">
@@ -437,7 +437,7 @@ export function ToolsetConfigDrawer({ toolset, profile, onClose, onChanged }: Pr
                   <Loader2 className="h-3 w-3 animate-spin ml-auto text-muted-foreground" />
                 )}
               </div>
-              <pre className="max-h-48 overflow-y-auto p-3 text-xs font-mono whitespace-pre-wrap text-text-secondary">
+              <pre className="max-h-48 overflow-y-auto p-3 text-xs font-mono whitespace-pre-wrap text-muted-foreground">
                 {postSetupLog.length ? postSetupLog.join("\n") : "Starting…"}
               </pre>
             </div>

@@ -17,23 +17,23 @@ import {
 import { api } from "@/lib/api";
 import type { EnvVarInfo } from "@/lib/api";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
-import { Toast } from "@nous-research/ui/ui/components/toast";
-import { useConfirmDelete } from "@nous-research/ui/hooks/use-confirm-delete";
-import { useToast } from "@nous-research/ui/hooks/use-toast";
+import { Toast } from "@/components/ui";
+import { useConfirmDelete } from "@/hooks/useConfirmDelete";
+import { useToast } from "@/hooks/useToast";
 import { OAuthProvidersCard } from "@/components/OAuthProvidersCard";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { ListItem } from "@nous-research/ui/ui/components/list-item";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
+import { Button } from "@/components/ui";
+import { ListItem } from "@/components/ui";
+import { Spinner } from "@/components/ui";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@nous-research/ui/ui/components/card";
-import { Badge } from "@nous-research/ui/ui/components/badge";
-import { Input } from "@nous-research/ui/ui/components/input";
-import { Label } from "@nous-research/ui/ui/components/label";
+} from "@/components/ui";
+import { Badge } from "@/components/ui";
+import { Input } from "@/components/ui";
+import { Label } from "@/components/ui";
 import { useI18n } from "@/i18n";
 import { usePageHeader } from "@/contexts/usePageHeader";
 import { PluginSlot } from "@/plugins";
@@ -133,12 +133,12 @@ function EnvVarRow({
   // Compact inline row for unset, non-editing keys (used inside provider groups)
   if (compact && !info.is_set && !isEditing) {
     return (
-      <div className="flex items-center justify-between gap-3 py-1.5 min-w-0 overflow-hidden text-text-secondary hover:text-foreground transition-colors">
+      <div className="flex items-center justify-between gap-3 py-1.5 min-w-0 overflow-hidden text-muted-foreground hover:text-foreground transition-colors">
         <div className="flex items-center gap-2 min-w-0">
           <span className="font-mono-ui text-xs">
             {varKey}
           </span>
-          <span className="text-xs text-text-tertiary truncate hidden sm:block">
+          <span className="text-xs text-muted-foreground truncate hidden sm:block">
             {info.description}
           </span>
         </div>
@@ -169,12 +169,12 @@ function EnvVarRow({
   // Non-compact unset row
   if (!info.is_set && !isEditing) {
     return (
-      <div className="flex items-center justify-between gap-3 border border-border/50 px-4 py-2.5 min-w-0 overflow-hidden text-text-secondary hover:text-foreground transition-colors">
+      <div className="flex items-center justify-between gap-3 border border-border/50 px-4 py-2.5 min-w-0 overflow-hidden text-muted-foreground hover:text-foreground transition-colors">
         <div className="flex items-center gap-3 min-w-0">
           <Label className="font-mono-ui text-xs">
             {varKey}
           </Label>
-          <span className="text-xs text-text-tertiary truncate hidden sm:block">
+          <span className="text-xs text-muted-foreground truncate hidden sm:block">
             {info.description}
           </span>
         </div>
@@ -413,7 +413,7 @@ function ProviderGroupCard({
               {t.env.getKey} <ExternalLink className="h-2.5 w-2.5" />
             </a>
           )}
-          <span className="text-xs text-text-tertiary">
+          <span className="text-xs text-muted-foreground">
             {t.env.keysCount
               .replace("{count}", String(group.entries.length))
               .replace("{s}", group.entries.length !== 1 ? "s" : "")}
@@ -546,7 +546,7 @@ export default function EnvPage() {
             key={s.id}
             type="button"
             onClick={() => scrollTo(s.id)}
-            className="shrink-0 cursor-pointer px-2 py-0.5 font-mondwest text-display text-xs tracking-wider text-text-secondary hover:text-foreground border border-border/50 hover:border-foreground/30 transition-colors"
+            className="shrink-0 cursor-pointer px-2 py-0.5 text-xs tracking-wider text-muted-foreground hover:text-foreground border border-border/50 hover:border-foreground/30 transition-colors"
           >
             {s.label}
           </button>
@@ -757,7 +757,7 @@ export default function EnvPage() {
           <p className="text-sm text-muted-foreground">
             {t.env.description} <code>~/.cybernetics/.env</code>
           </p>
-          <p className="text-xs text-text-tertiary">
+          <p className="text-xs text-muted-foreground">
             {t.env.changesNote}
           </p>
         </div>
@@ -901,7 +901,7 @@ function EnvCategoryCard({
               type="button"
               onClick={() => setShowAll((open) => !open)}
               aria-expanded={showAll}
-              className="shrink-0 cursor-pointer border-0 bg-transparent p-0 font-mondwest text-xs tracking-[0.08em] text-text-secondary transition-colors hover:text-foreground"
+              className="shrink-0 cursor-pointer border-0 bg-transparent p-0 text-xs tracking-[0.08em] text-muted-foreground transition-colors hover:text-foreground"
             >
               {showAll ? t.env.showLess : t.env.showMore}
             </button>
@@ -914,7 +914,7 @@ function EnvCategoryCard({
         </CardDescription>
 
         {section.hint && (
-          <CardDescription className="text-text-tertiary">
+          <CardDescription className="text-muted-foreground">
             {section.hint}
           </CardDescription>
         )}

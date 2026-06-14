@@ -1,6 +1,10 @@
-`cybernetics` => to start the tui
+`cybernetics` => to start the tui, basically, only for coders
 `cybernetics dashboard --no-open` => to start the dashboard(web - ui)
 `cybernetics dashboard` => to start the dashboard(web - ui) and open it in the browser
 `cybernetics dashboard --no-open --port 8080` => to start the dashboard(web - ui) and open it in the browser on port 8080
-`cybernetics gateway start` => to start the gateway
+`cybernetics gateway start` => to start the gateway, this is for the gateway like whatsapp
 `cybernetics gateway stop` => to stop the gateway
+
+
+## python packages needs to install:
+uv pip install python-multipart

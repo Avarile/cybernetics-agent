@@ -52,15 +52,13 @@ import {
   X,
   Zap,
 } from "lucide-react";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { SelectionSwitcher } from "@nous-research/ui/ui/components/selection-switcher";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { Typography } from "@nous-research/ui/ui/components/typography/index";
+import { Button } from "@/components/ui";
+import { Spinner } from "@/components/ui";
+import { Typography } from "@/components/ui";
 import { cn } from "@/lib/utils";
-import { Backdrop } from "@/components/Backdrop";
 import { SidebarFooter } from "@/components/SidebarFooter";
 import { SidebarStatusStrip, gatewayLine } from "@/components/SidebarStatusStrip";
-import { useBelowBreakpoint } from "@nous-research/ui/hooks/use-below-breakpoint";
+import { useBelowBreakpoint } from "@/hooks/useBelowBreakpoint";
 import { useSidebarStatus } from "@/hooks/useSidebarStatus";
 import { AuthWidget } from "@/components/AuthWidget";
 import { PageHeaderProvider } from "@/contexts/PageHeaderProvider";
@@ -90,7 +88,6 @@ import WebhooksPage from "@/pages/WebhooksPage";
 import SystemPage from "@/pages/SystemPage";
 import ChatPage from "@/pages/ChatPage";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
-import { ThemeSwitcher } from "@/components/ThemeSwitcher";
 import { useI18n } from "@/i18n";
 import type { Translations } from "@/i18n/types";
 import { PluginPage, PluginSlot, usePlugins } from "@/plugins";
@@ -481,18 +478,16 @@ export default function App() {
     <ProfileProvider>
     <div
       data-layout-variant={layoutVariant}
-      className="flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden bg-black text-text-primary antialiased"
+      className="flex h-dvh max-h-dvh min-h-0 flex-col overflow-hidden bg-background text-foreground antialiased"
     >
-      <SelectionSwitcher />
-      <Backdrop />
       <PluginSlot name="backdrop" />
 
       <header
         className={cn(
           "lg:hidden fixed top-0 left-0 right-0 z-40 min-h-14",
           "flex items-center gap-2 px-4 py-2",
-          "border-b border-current/20",
-          "bg-background-base/90 backdrop-blur-sm",
+          "border-b border-border",
+          "bg-background/90 backdrop-blur-sm",
         )}
         style={{
           background: "var(--component-header-background)",
@@ -507,14 +502,14 @@ export default function App() {
           aria-label={t.app.openNavigation}
           aria-expanded={mobileOpen}
           aria-controls="app-sidebar"
-          className="text-text-secondary hover:text-midground"
+          className="text-muted-foreground hover:text-foreground"
         >
           <Menu />
         </Button>
 
         <Typography
-          className="font-bold text-[0.95rem] leading-[0.95] tracking-[0.05em] text-midground"
-          style={{ mixBlendMode: "plus-lighter" }}
+          className="font-bold text-[0.95rem] leading-[0.95] tracking-[0.05em] text-foreground"
+          style={{ mixBlendMode: "normal" }}
         >
           {t.app.brand}
         </Typography>
@@ -542,8 +537,8 @@ export default function App() {
             aria-label={t.app.navigation}
             className={cn(
               "fixed top-0 left-0 z-50 flex h-dvh max-h-dvh w-64 min-h-0 flex-col",
-              "border-r border-current/20",
-              "bg-background-base/95 backdrop-blur-sm",
+              "border-r border-border",
+              "bg-background/95 backdrop-blur-sm",
               "transition-[transform] duration-200 ease-out",
               mobileOpen ? "translate-x-0" : "-translate-x-full",
               "lg:sticky lg:top-0 lg:translate-x-0 lg:shrink-0 lg:overflow-hidden",
@@ -559,7 +554,7 @@ export default function App() {
             <div
               className={cn(
                 "flex h-14 shrink-0 items-center gap-2",
-                "border-b border-current/20",
+                "border-b border-border",
                 collapsed ? "lg:justify-center lg:px-0" : "px-4 justify-between",
               )}
             >
@@ -572,8 +567,8 @@ export default function App() {
                 <PluginSlot name="header-left" />
 
                 <Typography
-                  className="font-bold text-[1.125rem] leading-[0.95] tracking-[0.0525rem] text-midground uppercase"
-                  style={{ mixBlendMode: "plus-lighter" }}
+                  className="font-bold text-[1.125rem] leading-[0.95] tracking-[0.0525rem] text-foreground uppercase"
+                  style={{ mixBlendMode: "normal" }}
                 >
                   Cybernetics
                   <br />
@@ -586,7 +581,7 @@ export default function App() {
                 size="icon"
                 onClick={closeMobile}
                 aria-label={t.app.closeNavigation}
-                className="lg:hidden text-text-secondary hover:text-midground"
+                className="lg:hidden text-muted-foreground hover:text-foreground"
               >
                 <X />
               </Button>
@@ -598,7 +593,7 @@ export default function App() {
                 aria-label={
                   collapsed ? t.common.expand : t.common.collapse
                 }
-                className="hidden lg:flex text-text-secondary hover:text-midground"
+                className="hidden lg:flex text-muted-foreground hover:text-foreground"
               >
                 {collapsed ? (
                   <PanelLeftOpen className="h-4 w-4" />
@@ -611,7 +606,7 @@ export default function App() {
             <ProfileSwitcher collapsed={isDesktopCollapsed} />
 
             <nav
-              className="min-h-0 w-full flex-1 overflow-y-auto overflow-x-hidden border-t border-current/10 py-2"
+              className="min-h-0 w-full flex-1 overflow-y-auto overflow-x-hidden border-t border-border py-2"
               aria-label={t.app.navigation}
             >
               <ul className="flex flex-col">
@@ -630,13 +625,13 @@ export default function App() {
               {sidebarNav.pluginItems.length > 0 && (
                 <div
                   aria-labelledby="hermes-sidebar-plugin-nav-heading"
-                  className="flex flex-col border-t border-current/10 pb-2"
+                  className="flex flex-col border-t border-border pb-2"
                   role="group"
                 >
                   <span
                     className={cn(
                       "px-5 pt-2.5 pb-1",
-                      "font-mondwest text-display text-xs tracking-[0.12em] text-text-tertiary",
+                      "text-xs tracking-[0.12em] text-muted-foreground",
                       isDesktopCollapsed && "lg:hidden",
                     )}
                     id="hermes-sidebar-plugin-nav-heading"
@@ -671,7 +666,7 @@ export default function App() {
               className={cn(
                 "flex shrink-0 items-center gap-2",
                 "px-3 py-2",
-                "border-t border-current/20",
+                "border-t border-border",
                 isDesktopCollapsed
                   ? "lg:flex-col lg:items-start lg:gap-3 lg:py-3"
                   : "justify-between",
@@ -684,14 +679,6 @@ export default function App() {
                 )}
               >
                 <PluginSlot name="header-right" />
-
-                <SidebarIconWithTooltip
-                  collapsed={isDesktopCollapsed}
-                  label={t.theme?.switchTheme ?? "Switch theme"}
-                  tooltipWarmRef={tooltipWarmRef}
-                >
-                  <ThemeSwitcher collapsed={isDesktopCollapsed} dropUp />
-                </SidebarIconWithTooltip>
 
                 <SidebarIconWithTooltip
                   collapsed={isDesktopCollapsed}
@@ -836,12 +823,12 @@ function SidebarNavLink({
           cn(
             "group/nav relative flex items-center gap-3",
             "px-5 py-2.5",
-            "font-mondwest text-display uppercase text-sm tracking-[0.12em]",
+            "uppercase text-sm tracking-[0.12em]",
             "whitespace-nowrap transition-colors cursor-pointer",
             "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-midground",
             isActive
-              ? "text-midground"
-              : "text-text-secondary hover:text-midground",
+              ? "text-foreground"
+              : "text-muted-foreground hover:text-foreground",
           )
         }
         style={{
@@ -863,14 +850,14 @@ function SidebarNavLink({
 
             <span
               aria-hidden
-              className="absolute inset-y-0.5 left-1.5 right-1.5 bg-midground opacity-0 pointer-events-none transition-opacity duration-200 group-hover/nav:opacity-5"
+              className="absolute inset-y-0.5 left-1.5 right-1.5 bg-primary opacity-0 pointer-events-none transition-opacity duration-200 group-hover/nav:opacity-5"
             />
 
             {isActive && (
               <span
                 aria-hidden
-                className="absolute left-0 top-0 bottom-0 w-px bg-midground"
-                style={{ mixBlendMode: "plus-lighter" }}
+                className="absolute left-0 top-0 bottom-0 w-px bg-primary"
+                style={{ mixBlendMode: "normal" }}
               />
             )}
           </>
@@ -923,14 +910,14 @@ function SidebarSystemActions({
     <div
       className={cn(
         "shrink-0 flex flex-col",
-        "border-t border-current/10",
+        "border-t border-border",
         "py-1",
       )}
     >
       <span
         className={cn(
           "px-5 pt-0.5 pb-0.5",
-          "font-mondwest text-display text-xs tracking-[0.12em] text-text-tertiary",
+          "text-xs tracking-[0.12em] text-muted-foreground",
           collapsed && "lg:hidden",
         )}
       >
@@ -993,13 +980,13 @@ function SystemActionButton({
         className={cn(
           "group/action relative flex w-full items-center gap-3",
           "px-5 py-2.5",
-          "font-mondwest text-display text-xs tracking-[0.1em]",
+          "text-xs tracking-[0.1em]",
           "whitespace-nowrap transition-colors cursor-pointer",
           "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-midground",
           busy
-            ? "text-midground"
-            : "text-text-secondary hover:text-midground",
-          "disabled:text-text-disabled disabled:cursor-not-allowed",
+            ? "text-foreground"
+            : "text-muted-foreground hover:text-foreground",
+          "disabled:text-muted-foreground/60 disabled:cursor-not-allowed",
         )}
       >
         {isPending ? (
@@ -1024,14 +1011,14 @@ function SystemActionButton({
 
         <span
           aria-hidden
-          className="absolute inset-y-0.5 left-1.5 right-1.5 bg-midground opacity-0 pointer-events-none transition-opacity duration-200 group-hover/action:opacity-5"
+          className="absolute inset-y-0.5 left-1.5 right-1.5 bg-primary opacity-0 pointer-events-none transition-opacity duration-200 group-hover/action:opacity-5"
         />
 
         {busy && (
           <span
             aria-hidden
-            className="absolute left-0 top-0 bottom-0 w-px bg-midground"
-            style={{ mixBlendMode: "plus-lighter" }}
+            className="absolute left-0 top-0 bottom-0 w-px bg-primary"
+            style={{ mixBlendMode: "normal" }}
           />
         )}
       </button>
@@ -1067,7 +1054,7 @@ function SidebarIconWithTooltip({
       {collapsed && (
         <span
           aria-hidden
-          className="absolute inset-y-0 inset-x-[-0.375rem] bg-midground opacity-0 pointer-events-none transition-opacity duration-200 group-hover/icon:opacity-5 hidden lg:block"
+          className="absolute inset-y-0 inset-x-[-0.375rem] bg-primary opacity-0 pointer-events-none transition-opacity duration-200 group-hover/icon:opacity-5 hidden lg:block"
         />
       )}
 
@@ -1094,7 +1081,7 @@ function GatewayDot({ collapsed, status, tooltipWarmRef }: GatewayDotProps) {
   let label: string;
 
   if (!status) {
-    color = "bg-midground/20";
+    color = "bg-primary/20";
     label = t.status.gateway;
   } else {
     const gw = gatewayLine(status, t);
@@ -1148,8 +1135,8 @@ function SidebarTooltip({ anchor, label, warmRef }: SidebarTooltipProps) {
       className={cn(
         "fixed z-[100] pointer-events-none",
         "px-2 py-1",
-        "bg-background-base/95 border border-current/20 backdrop-blur-sm shadow-lg",
-        "font-mondwest text-display text-xs tracking-[0.1em] text-midground uppercase",
+        "bg-background/95 border border-border backdrop-blur-sm shadow-lg",
+        "text-xs tracking-[0.1em] text-foreground uppercase",
       )}
       style={{
         top: rect.top + rect.height / 2,

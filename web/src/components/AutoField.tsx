@@ -1,7 +1,7 @@
-import { Select, SelectOption } from "@nous-research/ui/ui/components/select";
-import { Switch } from "@nous-research/ui/ui/components/switch";
-import { Input } from "@nous-research/ui/ui/components/input";
-import { Label } from "@nous-research/ui/ui/components/label";
+import { Select, SelectOption } from "@/components/ui";
+import { Switch } from "@/components/ui";
+import { Input } from "@/components/ui";
+import { Label } from "@/components/ui";
 
 function FieldHint({ schema, schemaKey }: { schema: Record<string, unknown>; schemaKey: string }) {
   const keyPath = schemaKey.includes(".") ? schemaKey : "";
@@ -11,8 +11,8 @@ function FieldHint({ schema, schemaKey }: { schema: Record<string, unknown>; sch
 
   return (
     <div className="flex flex-col gap-0.5">
-      {keyPath && <span className="text-xs font-mono text-text-tertiary">{keyPath}</span>}
-      {description && <span className="text-xs text-text-secondary">{description}</span>}
+      {keyPath && <span className="text-xs font-mono text-muted-foreground">{keyPath}</span>}
+      {description && <span className="text-xs text-muted-foreground">{description}</span>}
     </div>
   );
 }

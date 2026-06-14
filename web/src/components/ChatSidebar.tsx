@@ -23,9 +23,9 @@
  * terminal pane keeps working unimpaired.
  */
 
-import { Button } from "@nous-research/ui/ui/components/button";
-import { Badge } from "@nous-research/ui/ui/components/badge";
-import { Card } from "@nous-research/ui/ui/components/card";
+import { Button } from "@/components/ui";
+import { Badge } from "@/components/ui";
+import { Card } from "@/components/ui";
 
 import { ModelPickerDialog } from "@/components/ModelPickerDialog";
 import { ToolCall, type ToolEntry } from "@/components/ToolCall";
@@ -305,7 +305,7 @@ export function ChatSidebar({ channel, className }: ChatSidebarProps) {
     >
       <Card className="flex items-center justify-between gap-2 px-3 py-2">
         <div className="min-w-0">
-          <div className="text-display text-xs tracking-wider text-text-tertiary">
+          <div className="text-xs tracking-wider text-muted-foreground">
             model
           </div>
 
@@ -316,7 +316,7 @@ export function ChatSidebar({ channel, className }: ChatSidebarProps) {
             onClick={() => setModelOpen(true)}
             suffix={
               canPickModel ? (
-                <ChevronDown className="text-text-secondary" />
+                <ChevronDown className="text-muted-foreground" />
               ) : undefined
             }
             className="self-start min-w-0 px-0 py-0 normal-case tracking-normal text-sm font-medium hover:underline disabled:no-underline"
@@ -352,13 +352,13 @@ export function ChatSidebar({ channel, className }: ChatSidebarProps) {
       )}
 
       <Card className="flex min-h-0 flex-none flex-col px-2 py-2">
-        <div className="text-display px-1 pb-2 text-xs tracking-wider text-text-tertiary">
+        <div className="px-1 pb-2 text-xs tracking-wider text-muted-foreground">
           tools
         </div>
 
         <div className="flex min-h-0 flex-col gap-1.5">
           {tools.length === 0 ? (
-            <div className="px-2 py-4 text-center text-xs text-text-secondary">
+            <div className="px-2 py-4 text-center text-xs text-muted-foreground">
               no tool calls yet
             </div>
           ) : (

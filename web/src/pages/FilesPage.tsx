@@ -16,9 +16,9 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
-import { Badge } from "@nous-research/ui/ui/components/badge";
-import { Button } from "@nous-research/ui/ui/components/button";
-import { Card, CardContent } from "@nous-research/ui/ui/components/card";
+import { Badge } from "@/components/ui";
+import { Button } from "@/components/ui";
+import { Card, CardContent } from "@/components/ui";
 import {
   Dialog,
   DialogContent,
@@ -26,11 +26,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@nous-research/ui/ui/components/dialog";
-import { Input } from "@nous-research/ui/ui/components/input";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
-import { Toast } from "@nous-research/ui/ui/components/toast";
-import { useToast } from "@nous-research/ui/hooks/use-toast";
+} from "@/components/ui";
+import { Input } from "@/components/ui";
+import { Spinner } from "@/components/ui";
+import { Toast } from "@/components/ui";
+import { useToast } from "@/hooks/useToast";
 import { DeleteConfirmDialog } from "@/components/DeleteConfirmDialog";
 import { usePageHeader } from "@/contexts/usePageHeader";
 import { api } from "@/lib/api";
@@ -306,7 +306,7 @@ export default function FilesPage() {
             </Button>
           </form>
         ) : (
-          <div className="min-w-0 truncate font-mono text-sm text-text-secondary" title={activePath}>
+          <div className="min-w-0 truncate font-mono text-sm text-muted-foreground" title={activePath}>
             {activePath}
           </div>
         )}
@@ -348,23 +348,23 @@ export default function FilesPage() {
         className={`flex min-h-20 w-full min-w-0 items-center justify-between gap-4 border border-dashed px-4 py-3 text-left transition ${
           draggingFiles
             ? "border-primary bg-primary/10 text-foreground"
-            : "border-border bg-background/20 text-text-secondary hover:border-text-tertiary hover:bg-background/35"
+            : "border-border bg-background/20 text-muted-foreground hover:border-text-tertiary hover:bg-background/35"
         } disabled:cursor-not-allowed disabled:opacity-60`}
       >
         <span className="flex min-w-0 items-center gap-3">
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-border bg-background/45 text-text-tertiary">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center border border-border bg-background/45 text-muted-foreground">
             {uploading ? <Spinner /> : <Upload className="h-4 w-4" />}
           </span>
           <span className="min-w-0">
             <span className="block text-sm font-semibold uppercase tracking-[0.08em] text-foreground">
               {uploading ? "Uploading" : draggingFiles ? "Release to upload" : "Drop files here"}
             </span>
-            <span className="block truncate font-mono text-xs text-text-secondary" title={activePath}>
+            <span className="block truncate font-mono text-xs text-muted-foreground" title={activePath}>
               {activePath || "Loading"}
             </span>
           </span>
         </span>
-        <span className="hidden shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-text-tertiary sm:block">
+        <span className="hidden shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground sm:block">
           Choose files
         </span>
       </button>
@@ -377,7 +377,7 @@ export default function FilesPage() {
             </div>
           )}
 
-          <div className="grid min-w-[42rem] grid-cols-[minmax(12rem,1fr)_7rem_10rem_5.5rem] items-center gap-3 border-b border-border px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-text-tertiary">
+          <div className="grid min-w-[42rem] grid-cols-[minmax(12rem,1fr)_7rem_10rem_5.5rem] items-center gap-3 border-b border-border px-4 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
             <span>Name</span>
             <span>Size</span>
             <span>Modified</span>
@@ -390,8 +390,8 @@ export default function FilesPage() {
               onClick={() => setCurrentPath(listing.parent ?? undefined)}
               className="grid w-full min-w-[42rem] grid-cols-[minmax(12rem,1fr)_7rem_10rem_5.5rem] items-center gap-3 border-b border-border/60 px-4 py-2 text-left text-sm transition hover:bg-background/40"
             >
-              <span className="flex min-w-0 items-center gap-2 font-mono text-text-secondary">
-                <ArrowUp className="h-4 w-4 shrink-0 text-text-tertiary" />
+              <span className="flex min-w-0 items-center gap-2 font-mono text-muted-foreground">
+                <ArrowUp className="h-4 w-4 shrink-0 text-muted-foreground" />
                 ..
               </span>
               <span />
@@ -421,12 +421,12 @@ export default function FilesPage() {
                   {entry.is_directory ? (
                     <Folder className="h-4 w-4 shrink-0 text-warning" />
                   ) : (
-                    <FileIcon className="h-4 w-4 shrink-0 text-text-tertiary" />
+                    <FileIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
                   )}
                   <span className="truncate">{entry.name}</span>
                 </button>
-                <span className="text-xs tabular-nums text-text-secondary">{formatBytes(entry.size)}</span>
-                <span className="truncate text-xs text-text-secondary">
+                <span className="text-xs tabular-nums text-muted-foreground">{formatBytes(entry.size)}</span>
+                <span className="truncate text-xs text-muted-foreground">
                   {Number.isFinite(entry.mtime) ? DATE_FORMAT.format(entry.mtime * 1000) : "-"}
                 </span>
                 <span className="flex justify-end gap-1">

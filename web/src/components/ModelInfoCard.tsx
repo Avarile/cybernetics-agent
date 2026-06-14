@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Brain, Eye, Gauge, Lightbulb, Wrench } from "lucide-react";
-import { Spinner } from "@nous-research/ui/ui/components/spinner";
+import { Spinner } from "@/components/ui";
 import { api } from "@/lib/api";
 import type { ModelInfoResponse } from "@/lib/api";
 import { formatTokenCount } from "@/lib/format";
@@ -64,7 +64,7 @@ export function ModelInfoCard({
               (override — auto: {formatTokenCount(info.auto_context_length)})
             </span>
           ) : (
-            <span className="text-text-tertiary text-xs">
+            <span className="text-muted-foreground text-xs">
               auto-detected
             </span>
           )}
@@ -101,7 +101,7 @@ export function ModelInfoCard({
             </span>
           )}
           {caps.model_family && (
-            <span className="inline-flex items-center gap-1 bg-muted px-2 py-0.5 text-xs font-medium text-text-secondary">
+            <span className="inline-flex items-center gap-1 bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground">
               {caps.model_family}
             </span>
           )}
