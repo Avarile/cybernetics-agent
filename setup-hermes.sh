@@ -342,10 +342,10 @@ else
 fi
 
 # ============================================================================
-# PATH setup — symlink hermes into a user-facing bin dir
+# PATH setup — symlink cybernetics into a user-facing bin dir
 # ============================================================================
 
-echo -e "${CYAN}→${NC} Setting up hermes command..."
+echo -e "${CYAN}→${NC} Setting up cybernetics command..."
 
 HERMES_BIN="$SCRIPT_DIR/venv/bin/hermes"
 COMMAND_LINK_DIR="$(get_command_link_dir)"
@@ -425,31 +425,31 @@ echo "Next steps:"
 echo ""
 if is_termux; then
     echo "  1. Run the setup wizard to configure API keys:"
-    echo "     hermes setup"
+    echo "     cybernetics setup"
     echo ""
     echo "  2. Start chatting:"
-    echo "     hermes"
+    echo "     cybernetics"
     echo ""
 else
     echo "  1. Reload your shell:"
     echo "     source $SHELL_CONFIG"
     echo ""
     echo "  2. Run the setup wizard to configure API keys:"
-    echo "     hermes setup"
+    echo "     cybernetics setup"
     echo ""
     echo "  3. Start chatting:"
-    echo "     hermes"
+    echo "     cybernetics"
     echo ""
 fi
 echo "Other commands:"
-echo "  hermes status        # Check configuration"
+echo "  cybernetics status        # Check configuration"
 if is_termux; then
-    echo "  hermes gateway       # Run gateway in foreground"
+    echo "  cybernetics gateway       # Run gateway in foreground"
 else
-    echo "  hermes gateway install # Install gateway service (messaging + cron)"
+    echo "  cybernetics gateway install # Install gateway service (messaging + cron)"
 fi
-echo "  hermes cron list     # View scheduled jobs"
-echo "  hermes doctor        # Diagnose issues"
+echo "  cybernetics cron list     # View scheduled jobs"
+echo "  cybernetics doctor        # Diagnose issues"
 echo ""
 
 # Ask if they want to run setup wizard now
