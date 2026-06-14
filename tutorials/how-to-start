@@ -1,0 +1,6 @@
+`cybernetics` => to start the tui
+`cybernetics dashboard --no-open` => to start the dashboard(web - ui)
+`cybernetics dashboard` => to start the dashboard(web - ui) and open it in the browser
+`cybernetics dashboard --no-open --port 8080` => to start the dashboard(web - ui) and open it in the browser on port 8080
+`cybernetics gateway start` => to start the gateway
+`cybernetics gateway stop` => to stop the gateway
