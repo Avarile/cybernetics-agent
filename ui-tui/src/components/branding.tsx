@@ -290,7 +290,7 @@ export function SessionPanel({info, maxWidth, sid, t}: SessionPanelProps) {
 
                 {/* ── Tools ── */}
                 <Box flexDirection="column">
-                    <CollapseToggle onToggle={() => setToolsOpen(v => !v)} open={toolsOpen} t={t} title="Tools"/>
+                    <CollapseToggle onToggle={() => setToolsOpen(v => !v)} open={toolsOpen} t={t} title="Tools - click to expand"/>
                     {toolsOpen && toolsBody()}
                 </Box>
 
@@ -302,7 +302,7 @@ export function SessionPanel({info, maxWidth, sid, t}: SessionPanelProps) {
                         open={skillsOpen}
                         suffix={skillsCatCount > 0 ? `${skillsCatCount} categor${skillsCatCount === 1 ? 'y' : 'ies'}` : undefined}
                         t={t}
-                        title="Skills"
+                        title="Skills - click to expand"
                     />
                     {skillsOpen && skillsBody()}
                 </Box>
