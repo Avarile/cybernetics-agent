@@ -325,6 +325,10 @@ def _scan_gateway_pids(exclude_pids: set[int], all_profiles: bool = False) -> li
         "hermes_cli/main.py gateway",
         "hermes_cli/main.py --profile",
         "hermes_cli/main.py -p",
+        # MUST match the console_scripts entry in pyproject.toml. Do NOT
+        # source this from branding.BRAND_NAME or any env var — this is a
+        # process-detection pattern and must equal the literal binary name
+        # installed on disk, otherwise gateway pid discovery silently fails.
         "cybernetics gateway",
         # Windows: only match invocations that actually carry the ``gateway``
         # subcommand or the gateway-dedicated console-script shim. Bare
@@ -1738,6 +1742,10 @@ _LEGACY_UNIT_EXECSTART_MARKERS: tuple[str, ...] = (
     "hermes_cli.main gateway",
     "hermes_cli/main.py gateway",
     "gateway/run.py",
+    # The two entries below MUST match the console_scripts binary name from
+    # pyproject.toml. They scan systemd ExecStart lines on disk, so they
+    # cannot be derived from branding.BRAND_NAME or an env var without
+    # silently missing legacy units installed by older releases.
     " cybernetics gateway ",
     "/cybernetics gateway ",
 )

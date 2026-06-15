@@ -1,5 +1,6 @@
 import type { Translations } from "./types";
 
+import { BRAND_NAME, BRAND_SHORT } from "../branding";
 export const es: Translations = {
   common: {
     save: "Guardar",
@@ -50,12 +51,12 @@ export const es: Translations = {
   },
 
   app: {
-    brand: "Cybernetics Agent",
+    brand: `${BRAND_NAME}`,
     brandShort: "CA",
     closeNavigation: "Cerrar navegación",
     closeModelTools: "Cerrar modelo y herramientas",
     footer: {
-      org: "Nous Research",
+      org: "Avarile Coding",
     },
     activeSessionsLabel: "Sesiones activas:",
     gatewayStatusLabel: "Estado del Gateway:",
@@ -120,8 +121,8 @@ export const es: Translations = {
     starting: "Iniciando",
     startedInBackground: "Iniciado en segundo plano — revisa los registros para ver el progreso",
     stopped: "Detenido",
-    updateCybernetics: "Actualizar Cybernetics",
-    updatingCybernetics: "Actualizando Cybernetics…",
+    updateCybernetics: `Actualizar ${BRAND_SHORT}`,
+    updatingCybernetics: `Actualizando ${BRAND_SHORT}…`,
     waitingForOutput: "Esperando salida…",
   },
 
@@ -318,8 +319,7 @@ export const es: Translations = {
     enableAfterInstall: "Habilitar tras instalar",
     enableRuntime: "Habilitar",
     forceReinstall: "Forzar reinstalación (eliminar carpeta existente primero)",
-    headline:
-      "Descubre, instala, habilita y actualiza complementos de Cybernetics (equivalente a `cybernetics plugins`).",
+    headline: `Descubre, instala, habilita y actualiza complementos de ${BRAND_SHORT} (equivalente a \`cybernetics plugins\`).`,
     identifierLabel: "URL de Git u owner/repo",
     inactive: "inactivo",
     installBtn: "Instalar",
@@ -484,11 +484,9 @@ export const es: Translations = {
   achievements: {
     hero: {
       kicker: "Agentic Gamerscore",
-      title: "Cybernetics Achievements",
-      subtitle:
-        "Insignias coleccionables de Cybernetics ganadas a partir del historial real de sesiones. Los logros conocidos no completados se muestran como Descubiertos; los logros secretos permanecen ocultos hasta que aparece el primer comportamiento coincidente.",
-      scan_subtitle:
-        "Escaneando el historial de sesiones de Cybernetics. El primer escaneo puede tardar 5–10 segundos en historiales grandes.",
+      title: `${BRAND_SHORT} Achievements`,
+      subtitle: `Insignias coleccionables de ${BRAND_SHORT} ganadas a partir del historial real de sesiones. Los logros conocidos no completados se muestran como Descubiertos; los logros secretos permanecen ocultos hasta que aparece el primer comportamiento coincidente.`,
+      scan_subtitle: `Escaneando el historial de sesiones de ${BRAND_SHORT}. El primer escaneo puede tardar 5–10 segundos en historiales grandes.`,
     },
     actions: {
       rescan: "Volver a escanear",
@@ -503,7 +501,7 @@ export const es: Translations = {
       highest_tier: "Nivel más alto",
       highest_tier_hint: "Copper → Silver → Gold → Diamond → Olympian",
       latest: "Más reciente",
-      latest_hint_empty: "usa Cybernetics más",
+      latest_hint_empty: `usa ${BRAND_SHORT} más`,
       none_yet: "Ninguno aún",
     },
     state: {
@@ -533,11 +531,9 @@ export const es: Translations = {
     guide: {
       tiers_header: "Niveles",
       secret_header: "Logros secretos",
-      secret_body:
-        "Los secretos ocultan su disparador exacto. Una vez que Cybernetics detecta una señal relacionada, la tarjeta pasa a Descubierto y muestra su requisito.",
+      secret_body: `Los secretos ocultan su disparador exacto. Una vez que ${BRAND_SHORT} detecta una señal relacionada, la tarjeta pasa a Descubierto y muestra su requisito.`,
       scan_status_header: "Estado del escaneo",
-      scan_status_body:
-        "Cybernetics está escaneando el historial local una vez, después las tarjetas aparecerán automáticamente. No hay nada bloqueado si tarda unos segundos.",
+      scan_status_body: `${BRAND_SHORT} está escaneando el historial local una vez, después las tarjetas aparecerán automáticamente. No hay nada bloqueado si tarda unos segundos.`,
       what_scanned_header: "Qué se escanea",
       what_scanned_body:
         "Sesiones, llamadas a herramientas, metadatos del modelo, errores, logros y estado de desbloqueo local.",
@@ -584,7 +580,7 @@ export const es: Translations = {
         "Compartir en X abre una publicación predefinida en una nueva pestaña. Haz clic primero en Copiar imagen si quieres adjuntar la insignia 1200×630: X te permite pegarla directamente en el redactor del tuit. Descargar PNG guarda el archivo para usarlo en cualquier lugar.",
       clipboard_unsupported:
         "Este navegador no admite copiar imágenes al portapapeles: usa Descargar en su lugar.",
-      tweet_text: "Just unlocked {tier_part}\"{name}\" in Cybernetics Agent ☤",
+      tweet_text: `Just unlocked {tier_part}"{name}" in ${BRAND_NAME} ☤`,
     },
   },
   kanban: {

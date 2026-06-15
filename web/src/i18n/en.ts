@@ -1,4 +1,5 @@
 import type { Translations } from "./types";
+import { BRAND_NAME, BRAND_SHORT } from "../branding";
 
 export const en: Translations = {
   common: {
@@ -53,12 +54,12 @@ export const en: Translations = {
   },
 
   app: {
-    brand: "Cybernetics Agent",
+    brand: BRAND_NAME,
     brandShort: "CA",
     closeNavigation: "Close navigation",
     closeModelTools: "Close model and tools",
     footer: {
-      org: "Nous Research",
+      org: "Avarile Coding",
     },
     activeSessionsLabel: "Active Sessions:",
     gatewayStatusLabel: "Gateway Status:",
@@ -127,8 +128,8 @@ export const en: Translations = {
     starting: "Starting",
     startedInBackground: "Started in background — check logs for progress",
     stopped: "Stopped",
-    updateCybernetics: "Update Cybernetics",
-    updatingCybernetics: "Updating Cybernetics…",
+    updateCybernetics: `Update ${BRAND_SHORT}`,
+    updatingCybernetics: `Updating ${BRAND_SHORT}…`,
     waitingForOutput: "Waiting for output…",
   },
 
@@ -360,8 +361,7 @@ export const en: Translations = {
     enableAfterInstall: "Enable after install",
     enableRuntime: "Enable",
     forceReinstall: "Force reinstall (delete existing folder first)",
-    headline:
-      "Discover, install, enable, and update Cybernetics plugins (`cybernetics plugins` parity).",
+    headline: `Discover, install, enable, and update ${BRAND_SHORT} plugins (\`cybernetics plugins\` parity).`,
     identifierLabel: "Git URL or owner/repo",
     inactive: "inactive",
     installBtn: "Install",
@@ -537,11 +537,9 @@ export const en: Translations = {
   achievements: {
     hero: {
       kicker: "Agentic Gamerscore",
-      title: "Cybernetics Achievements",
-      subtitle:
-        "Collectible Cybernetics badges earned from real session history. Known unfinished achievements are shown as Discovered; Secret achievements stay hidden until the first matching behavior appears.",
-      scan_subtitle:
-        "Scanning Cybernetics session history. First scan can take 5–10 seconds on large histories.",
+      title: `${BRAND_SHORT} Achievements`,
+      subtitle: `Collectible ${BRAND_SHORT} badges earned from real session history. Known unfinished achievements are shown as Discovered; Secret achievements stay hidden until the first matching behavior appears.`,
+      scan_subtitle: `Scanning ${BRAND_SHORT} session history. First scan can take 5–10 seconds on large histories.`,
     },
     actions: {
       rescan: "Rescan",
@@ -556,7 +554,7 @@ export const en: Translations = {
       highest_tier: "Highest tier",
       highest_tier_hint: "Copper → Silver → Gold → Diamond → Olympian",
       latest: "Latest",
-      latest_hint_empty: "run Cybernetics more",
+      latest_hint_empty: `run ${BRAND_SHORT} more`,
       none_yet: "None yet",
     },
     state: {
@@ -586,11 +584,9 @@ export const en: Translations = {
     guide: {
       tiers_header: "Tiers",
       secret_header: "Secret achievements",
-      secret_body:
-        "Secrets hide their exact trigger. Once Cybernetics sees a related signal, the card becomes Discovered and shows its requirement.",
+      secret_body: `Secrets hide their exact trigger. Once ${BRAND_SHORT} sees a related signal, the card becomes Discovered and shows its requirement.`,
       scan_status_header: "Scan status",
-      scan_status_body:
-        "Cybernetics is scanning local history once, then cards will appear automatically. Nothing is stuck if this takes a few seconds.",
+      scan_status_body: `${BRAND_SHORT} is scanning local history once, then cards will appear automatically. Nothing is stuck if this takes a few seconds.`,
       what_scanned_header: "What is scanned",
       what_scanned_body:
         "Sessions, tool calls, model metadata, errors, achievements, and local unlock state.",
@@ -637,7 +633,7 @@ export const en: Translations = {
         "Share on X opens a pre-filled post in a new tab. Click Copy image first if you want the 1200×630 badge attached — X lets you paste it right into the tweet composer. Download PNG saves the file for use anywhere.",
       clipboard_unsupported:
         "Clipboard image copy not supported in this browser — use Download instead.",
-      tweet_text: "Just unlocked {tier_part}\"{name}\" in Cybernetics Agent ☤",
+      tweet_text: `Just unlocked {tier_part}"{name}" in ${BRAND_NAME} ☤`,
     },
   },
 

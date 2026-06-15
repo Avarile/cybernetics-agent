@@ -1,5 +1,6 @@
 import type { Translations } from "./types";
 
+import { BRAND_NAME, BRAND_SHORT } from "../branding";
 export const uk: Translations = {
   common: {
     save: "Зберегти",
@@ -50,12 +51,12 @@ export const uk: Translations = {
   },
 
   app: {
-    brand: "Cybernetics Agent",
+    brand: `${BRAND_NAME}`,
     brandShort: "CA",
     closeNavigation: "Закрити навігацію",
     closeModelTools: "Закрити модель та інструменти",
     footer: {
-      org: "Nous Research",
+      org: "Avarile Coding",
     },
     activeSessionsLabel: "Активні сесії:",
     gatewayStatusLabel: "Стан шлюзу:",
@@ -120,8 +121,8 @@ export const uk: Translations = {
     starting: "Запускається",
     startedInBackground: "Запущено у фоні — перевірте журнали для прогресу",
     stopped: "Зупинено",
-    updateCybernetics: "Оновити Cybernetics",
-    updatingCybernetics: "Оновлення Cybernetics…",
+    updateCybernetics: `Оновити ${BRAND_SHORT}`,
+    updatingCybernetics: `Оновлення ${BRAND_SHORT}…`,
     waitingForOutput: "Очікування виводу…",
   },
 
@@ -318,8 +319,7 @@ export const uk: Translations = {
     enableAfterInstall: "Увімкнути після встановлення",
     enableRuntime: "Увімкнути",
     forceReinstall: "Примусово перевстановити (спершу видалити наявну теку)",
-    headline:
-      "Знаходьте, встановлюйте, вмикайте та оновлюйте плагіни Cybernetics (паритет з `cybernetics plugins`).",
+    headline: `Знаходьте, встановлюйте, вмикайте та оновлюйте плагіни ${BRAND_SHORT} (паритет з \`cybernetics plugins\`).`,
     identifierLabel: "Git URL або owner/repo",
     inactive: "неактивний",
     installBtn: "Встановити",
@@ -485,11 +485,9 @@ export const uk: Translations = {
   achievements: {
     hero: {
       kicker: "Agentic Gamerscore",
-      title: "Cybernetics Achievements",
-      subtitle:
-        "Колекційні значки Cybernetics, отримані з реальної історії сеансів. Відомі, але ще не виконані досягнення показані як Виявлені; Секретні досягнення залишаються прихованими, доки не з'явиться перший відповідний сигнал.",
-      scan_subtitle:
-        "Сканування історії сеансів Cybernetics. Перше сканування на великих історіях може тривати 5–10 секунд.",
+      title: `${BRAND_SHORT} Achievements`,
+      subtitle: `Колекційні значки ${BRAND_SHORT}, отримані з реальної історії сеансів. Відомі, але ще не виконані досягнення показані як Виявлені; Секретні досягнення залишаються прихованими, доки не з'явиться перший відповідний сигнал.`,
+      scan_subtitle: `Сканування історії сеансів ${BRAND_SHORT}. Перше сканування на великих історіях може тривати 5–10 секунд.`,
     },
     actions: {
       rescan: "Повторне сканування",
@@ -504,7 +502,7 @@ export const uk: Translations = {
       highest_tier: "Найвищий рівень",
       highest_tier_hint: "Copper → Silver → Gold → Diamond → Olympian",
       latest: "Останнє",
-      latest_hint_empty: "запускайте Cybernetics частіше",
+      latest_hint_empty: `запускайте ${BRAND_SHORT} частіше`,
       none_yet: "Поки немає",
     },
     state: {
@@ -534,11 +532,9 @@ export const uk: Translations = {
     guide: {
       tiers_header: "Рівні",
       secret_header: "Секретні досягнення",
-      secret_body:
-        "Секрети приховують свій точний тригер. Щойно Cybernetics побачить пов'язаний сигнал, картка стає Виявленою та показує свою умову.",
+      secret_body: `Секрети приховують свій точний тригер. Щойно ${BRAND_SHORT} побачить пов'язаний сигнал, картка стає Виявленою та показує свою умову.`,
       scan_status_header: "Стан сканування",
-      scan_status_body:
-        "Cybernetics одноразово сканує локальну історію, а потім картки з'являться автоматично. Якщо це триває кілька секунд — нічого не зависло.",
+      scan_status_body: `${BRAND_SHORT} одноразово сканує локальну історію, а потім картки з'являться автоматично. Якщо це триває кілька секунд — нічого не зависло.`,
       what_scanned_header: "Що сканується",
       what_scanned_body:
         "Сеанси, виклики інструментів, метадані моделей, помилки, досягнення та локальний стан розблокування.",
@@ -585,7 +581,7 @@ export const uk: Translations = {
         "«Поділитися в X» відкриває попередньо заповнений допис у новій вкладці. Якщо хочете прикріпити значок 1200×630 — спочатку натисніть «Копіювати зображення»: X дозволить вставити його прямо в редактор твіта. «Завантажити PNG» збереже файл для використання будь-де.",
       clipboard_unsupported:
         "Цей браузер не підтримує копіювання зображень у буфер обміну — використайте «Завантажити».",
-      tweet_text: "Just unlocked {tier_part}\"{name}\" in Cybernetics Agent ☤",
+      tweet_text: `Just unlocked {tier_part}"{name}" in ${BRAND_NAME} ☤`,
     },
   },
   kanban: {

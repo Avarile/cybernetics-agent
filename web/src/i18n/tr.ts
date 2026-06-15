@@ -1,5 +1,6 @@
 import type { Translations } from "./types";
 
+import { BRAND_NAME, BRAND_SHORT } from "../branding";
 export const tr: Translations = {
   common: {
     save: "Kaydet",
@@ -50,12 +51,12 @@ export const tr: Translations = {
   },
 
   app: {
-    brand: "Cybernetics Agent",
+    brand: `${BRAND_NAME}`,
     brandShort: "CA",
     closeNavigation: "Gezintiyi kapat",
     closeModelTools: "Modeli ve araçları kapat",
     footer: {
-      org: "Nous Research",
+      org: "Avarile Coding",
     },
     activeSessionsLabel: "Aktif Oturumlar:",
     gatewayStatusLabel: "Ağ Geçidi Durumu:",
@@ -120,8 +121,8 @@ export const tr: Translations = {
     starting: "Başlatılıyor",
     startedInBackground: "Arka planda başlatıldı — ilerleme için günlüklere bakın",
     stopped: "Durduruldu",
-    updateCybernetics: "Cybernetics'i Güncelle",
-    updatingCybernetics: "Cybernetics güncelleniyor…",
+    updateCybernetics: `${BRAND_SHORT}'i Güncelle`,
+    updatingCybernetics: `${BRAND_SHORT} güncelleniyor…`,
     waitingForOutput: "Çıktı bekleniyor…",
   },
 
@@ -318,8 +319,7 @@ export const tr: Translations = {
     enableAfterInstall: "Yüklemeden sonra etkinleştir",
     enableRuntime: "Etkinleştir",
     forceReinstall: "Yeniden yüklemeyi zorla (önce mevcut klasörü sil)",
-    headline:
-      "Cybernetics eklentilerini keşfedin, yükleyin, etkinleştirin ve güncelleyin (`cybernetics plugins` ile eşdeğer).",
+    headline: `${BRAND_SHORT} eklentilerini keşfedin, yükleyin, etkinleştirin ve güncelleyin (\`cybernetics plugins\` ile eşdeğer).`,
     identifierLabel: "Git URL veya owner/repo",
     inactive: "pasif",
     installBtn: "Yükle",
@@ -485,11 +485,9 @@ export const tr: Translations = {
   achievements: {
     hero: {
       kicker: "Agentic Gamerscore",
-      title: "Cybernetics Achievements",
-      subtitle:
-        "Gerçek oturum geçmişinden kazanılan, koleksiyonluk Cybernetics rozetleri. Bilinen ama henüz tamamlanmamış başarılar Keşfedildi olarak gösterilir; Gizli başarılar ilk eşleşen davranış görünene kadar saklı kalır.",
-      scan_subtitle:
-        "Cybernetics oturum geçmişi taranıyor. Büyük geçmişlerde ilk tarama 5–10 saniye sürebilir.",
+      title: `${BRAND_SHORT} Achievements`,
+      subtitle: `Gerçek oturum geçmişinden kazanılan, koleksiyonluk ${BRAND_SHORT} rozetleri. Bilinen ama henüz tamamlanmamış başarılar Keşfedildi olarak gösterilir; Gizli başarılar ilk eşleşen davranış görünene kadar saklı kalır.`,
+      scan_subtitle: `${BRAND_SHORT} oturum geçmişi taranıyor. Büyük geçmişlerde ilk tarama 5–10 saniye sürebilir.`,
     },
     actions: {
       rescan: "Yeniden tara",
@@ -504,7 +502,7 @@ export const tr: Translations = {
       highest_tier: "En yüksek kademe",
       highest_tier_hint: "Copper → Silver → Gold → Diamond → Olympian",
       latest: "En son",
-      latest_hint_empty: "Cybernetics'i daha çok çalıştır",
+      latest_hint_empty: `${BRAND_SHORT}'i daha çok çalıştır`,
       none_yet: "Henüz yok",
     },
     state: {
@@ -534,11 +532,9 @@ export const tr: Translations = {
     guide: {
       tiers_header: "Kademeler",
       secret_header: "Gizli başarılar",
-      secret_body:
-        "Sırlar, tetikleyicilerini saklı tutar. Cybernetics ilgili bir sinyal gördüğünde kart Keşfedildi durumuna geçer ve gereksinimini gösterir.",
+      secret_body: `Sırlar, tetikleyicilerini saklı tutar. ${BRAND_SHORT} ilgili bir sinyal gördüğünde kart Keşfedildi durumuna geçer ve gereksinimini gösterir.`,
       scan_status_header: "Tarama durumu",
-      scan_status_body:
-        "Cybernetics yerel geçmişi bir kez tarıyor; sonra kartlar otomatik olarak görünür. Birkaç saniye sürmesi normaldir, hiçbir şey takılmadı.",
+      scan_status_body: `${BRAND_SHORT} yerel geçmişi bir kez tarıyor; sonra kartlar otomatik olarak görünür. Birkaç saniye sürmesi normaldir, hiçbir şey takılmadı.`,
       what_scanned_header: "Neler taranır",
       what_scanned_body:
         "Oturumlar, araç çağrıları, model meta verileri, hatalar, başarılar ve yerel açılma durumu.",
@@ -585,7 +581,7 @@ export const tr: Translations = {
         "X'te paylaş, yeni sekmede önceden doldurulmuş bir gönderi açar. 1200×630 rozetin eklenmesini istiyorsan önce Görseli kopyala'ya tıkla — X, görseli doğrudan tweet düzenleyiciye yapıştırmana izin verir. PNG indir, dosyayı her yerde kullanmak üzere kaydeder.",
       clipboard_unsupported:
         "Bu tarayıcıda panoya görsel kopyalama desteklenmiyor — bunun yerine İndir'i kullanın.",
-      tweet_text: "Just unlocked {tier_part}\"{name}\" in Cybernetics Agent ☤",
+      tweet_text: `Just unlocked {tier_part}"{name}" in ${BRAND_NAME} ☤`,
     },
   },
   kanban: {

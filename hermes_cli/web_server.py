@@ -62,6 +62,7 @@ from hermes_cli.config import (
     recommended_update_command_for_method,
     redact_key,
 )
+from branding import BRAND_NAME
 from gateway.status import get_running_pid, read_runtime_status
 from utils import env_var_enabled
 
@@ -172,7 +173,7 @@ def _get_event_state(app: "FastAPI"):
         return app.state.event_channels, app.state.event_lock
 
 
-app = FastAPI(title="Cybernetics Agent", version=__version__, lifespan=_lifespan)
+app = FastAPI(title=BRAND_NAME, version=__version__, lifespan=_lifespan)
 
 # ---------------------------------------------------------------------------
 # Session token for protecting sensitive endpoints (reveal).

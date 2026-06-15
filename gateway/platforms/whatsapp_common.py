@@ -37,6 +37,8 @@ import os
 import re
 from typing import Any, Dict, Optional
 
+from branding import BRAND_NAME
+
 
 logger = logging.getLogger(__name__)
 
@@ -54,7 +56,7 @@ class WhatsAppBehaviorMixin:
     MAX_MESSAGE_LENGTH: int = 4096
     supports_code_blocks = True  # WhatsApp renders fenced code blocks (monospace)
 
-    DEFAULT_REPLY_PREFIX: str = "*Cybernetics Agent*\n────────────\n"
+    DEFAULT_REPLY_PREFIX: str = f"*{BRAND_NAME}*\n────────────\n"
 
     @property
     def enforces_own_access_policy(self) -> bool:
