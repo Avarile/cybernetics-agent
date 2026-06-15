@@ -1,7 +1,7 @@
 """
 Doctor command for hermes CLI.
 
-Diagnoses issues with Hermes Agent setup.
+Diagnoses issues with Cybernetics Agent setup.
 """
 
 import os
@@ -480,7 +480,7 @@ def run_doctor(args):
         else:
             print(color(
                 f"  ✗ Failed to persist ack for {ack_target}. "
-                f"Check ~/.hermes/config.yaml is writable.",
+                f"Check ~/.cybernetics/config.yaml is writable.",
                 Colors.RED,
             ))
             sys.exit(1)
@@ -492,7 +492,7 @@ def run_doctor(args):
 
     print()
     print(color("┌─────────────────────────────────────────────────────────┐", Colors.CYAN))
-    print(color("│                 🩺 Hermes Doctor                        │", Colors.CYAN))
+    print(color("│                 🩺 Cybernetics Doctor                   │", Colors.CYAN))
     print(color("└─────────────────────────────────────────────────────────┘", Colors.CYAN))
 
     _section("Security Advisories")
@@ -804,7 +804,7 @@ def run_doctor(args):
                     if not configured:
                         _fail_and_issue(
                             f"model.provider '{runtime_provider}' is set but no API key is configured",
-                            "(check ~/.hermes/.env or run 'cybernetics setup')",
+                            "(check ~/.cybernetics/.env or run 'cybernetics setup')",
                             (
                                 f"No credentials found for provider '{runtime_provider}'. "
                                 f"Run 'cybernetics setup' or set the provider's API key in {_DHH}/.env, "

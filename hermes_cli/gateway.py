@@ -1403,7 +1403,7 @@ def _windows_gateway_should_absorb_console_controls() -> bool:
 # =============================================================================
 
 _SERVICE_BASE = "hermes-gateway"
-SERVICE_DESCRIPTION = "Hermes Agent Gateway - Messaging Platform Integration"
+SERVICE_DESCRIPTION = "Cybernetics Agent Gateway - Messaging Platform Integration"
 
 
 def _profile_suffix() -> str:
@@ -1815,7 +1815,7 @@ def print_legacy_unit_warning() -> None:
     legacy = _find_legacy_hermes_units()
     if not legacy:
         return
-    print_warning("Legacy Hermes gateway unit(s) detected from an older install:")
+    print_warning("Legacy Cybernetics gateway unit(s) detected from an older install:")
     for name, path, is_system in legacy:
         scope = "system" if is_system else "user"
         print_info(f"    {path}  ({scope} scope)")
@@ -1847,14 +1847,14 @@ def remove_legacy_hermes_units(
     """
     legacy = _find_legacy_hermes_units()
     if not legacy:
-        print("No legacy Hermes gateway units found.")
+        print("No legacy Cybernetics gateway units found.")
         return 0, []
 
     user_units = [(n, p) for n, p, is_sys in legacy if not is_sys]
     system_units = [(n, p) for n, p, is_sys in legacy if is_sys]
 
     print()
-    print("Legacy Hermes gateway unit(s) found:")
+    print("Legacy Cybernetics gateway unit(s) found:")
     for name, path, is_system in legacy:
         scope = "system" if is_system else "user"
         print(f"  {path}  ({scope} scope)")
@@ -2028,7 +2028,7 @@ def install_linux_gateway_from_setup(force: bool = False, enable_on_startup: boo
         run_as_user = _default_system_service_user()
         if os.geteuid() != 0:  # windows-footgun: ok — Linux systemd install wizard, never invoked on Windows
             print_warning(
-                "  System service install requires sudo, so Hermes can't create it from this user session."
+                "  System service install requires sudo, so Cybernetics can't create it from this user session."
             )
             if run_as_user:
                 print_info(
@@ -2637,7 +2637,7 @@ def refresh_systemd_unit_if_needed(system: bool = False) -> bool:
     unit_path.write_text(new_unit, encoding="utf-8")
     _run_systemctl(["daemon-reload"], system=system, check=True, timeout=30)
     print(
-        f"↻ Updated gateway {_service_scope_label(system)} service definition to match the current Hermes install"
+        f"↻ Updated gateway {_service_scope_label(system)} service definition to match the current Cybernetics install"
     )
     return True
 
@@ -3454,7 +3454,7 @@ def refresh_launchd_plist_if_needed() -> bool:
         timeout=30,
     )
     print(
-        "↻ Updated gateway launchd service definition to match the current Hermes install"
+        "↻ Updated gateway launchd service definition to match the current Cybernetics install"
     )
     return True
 
@@ -3733,9 +3733,9 @@ def launchd_status(deep: bool = False):
 
     print(f"Launchd plist: {plist_path}")
     if launchd_plist_is_current():
-        print("✓ Service definition matches the current Hermes install")
+        print("✓ Service definition matches the current Cybernetics install")
     else:
-        print("⚠ Service definition is stale relative to the current Hermes install")
+        print("⚠ Service definition is stale relative to the current Cybernetics install")
         print("  Run: cybernetics gateway start")
 
     if loaded:
@@ -3780,12 +3780,12 @@ def _guard_official_docker_root_gateway() -> None:
         return
 
     print_error(
-        "Refusing to run the Hermes gateway as root inside the official Docker image."
+        "Refusing to run the Cybernetics gateway as root inside the official Docker image."
     )
     print(
         "  The image entrypoint normally drops privileges to the 'hermes' user. "
         "If you override entrypoint in Docker Compose, include "
-        "/opt/hermes/docker/entrypoint.sh before the Hermes command."
+        "/opt/hermes/docker/entrypoint.sh before the Cybernetics command."
     )
     print(
         "  Running the gateway as root can leave root-owned files in "
@@ -3867,7 +3867,7 @@ def run_gateway(verbose: int = 0, quiet: bool = False, replace: bool = False):
     from gateway.run import start_gateway
 
     print("┌─────────────────────────────────────────────────────────┐")
-    print("│           ⚕ Hermes Gateway Starting...                 │")
+    print("│           ⚕ Cybernetics Gateway Starting...            │")
     print("├─────────────────────────────────────────────────────────┤")
     print("│  Messaging platforms + cron scheduler                    │")
     print("│  Press Ctrl+C to stop                                   │")
@@ -4062,7 +4062,7 @@ _PLATFORMS = [
             "3. Get an access token: Element → Settings → Help & About → Access Token",
             "   Or via API: curl -X POST https://your-server/_matrix/client/v3/login \\",
             '     -d \'{"type":"m.login.password","user":"@bot:server","password":"..."}\'',
-            "4. Alternatively, provide user ID + password and Hermes will log in directly",
+            "4. Alternatively, provide user ID + password and Cybernetics will log in directly",
             "5. For E2EE: set MATRIX_ENCRYPTION=true (requires pip install 'mautrix[encryption]')",
             "6. To find your user ID: it's @username:your-server (shown in Element profile)",
         ],
@@ -4167,7 +4167,7 @@ _PLATFORMS = [
         "emoji": "📧",
         "token_var": "EMAIL_ADDRESS",
         "setup_instructions": [
-            "1. Use a dedicated email account for your Hermes agent",
+            "1. Use a dedicated email account for your Cybernetics agent",
             "2. For Gmail: enable 2FA, then create an App Password at",
             "   https://myaccount.google.com/apppasswords",
             "3. For other providers: use your email password or app-specific password",
@@ -4178,7 +4178,7 @@ _PLATFORMS = [
                 "name": "EMAIL_ADDRESS",
                 "prompt": "Email address",
                 "password": False,
-                "help": "The email address Hermes will use (e.g., hermes@gmail.com).",
+                "help": "The email address Cybernetics will use (e.g., cybernetics@gmail.com).",
             },
             {
                 "name": "EMAIL_PASSWORD",
@@ -4449,7 +4449,7 @@ _PLATFORMS = [
             "2. Complete the BlueBubbles setup wizard — sign in with your Apple ID",
             "3. In BlueBubbles Settings → API, note the Server URL and password",
             "4. The server URL is typically http://<your-mac-ip>:1234",
-            "5. Hermes connects via the BlueBubbles REST API and receives",
+            "5. Cybernetics connects via the BlueBubbles REST API and receives",
             "   incoming messages via a local webhook",
             "6. To authorize users, use DM pairing: cybernetics pairing generate bluebubbles",
             "   Share the code — the user sends it via iMessage to get approved",
@@ -4530,7 +4530,7 @@ _PLATFORMS = [
             "1. Download the Yuanbao app from https://yuanbao.tencent.com/",
             "2. In the app, go to PAI → My Bot and create a new bot",
             "3. After the bot is created, copy the App ID and App Secret",
-            "4. Enter them below and Hermes will connect automatically over WebSocket",
+            "4. Enter them below and Cybernetics will connect automatically over WebSocket",
         ],
         "vars": [
             {
@@ -4572,7 +4572,7 @@ def _all_platforms() -> list[dict]:
     # Populate the registry so plugin platforms are visible. Idempotent.
     # Bundled platform plugins (``kind: platform``) auto-load unconditionally,
     # so every shipped messaging channel appears in the setup menu by default.
-    # User-installed platform plugins under ~/.hermes/plugins/ still require
+    # User-installed platform plugins under ~/.cybernetics/plugins/ still require
     # opt-in via ``plugins.enabled`` (untrusted code).
     try:
         from hermes_cli.plugins import discover_plugins
@@ -5155,10 +5155,10 @@ def _setup_weixin():
     print()
     print(color("  ─── 💬 Weixin / WeChat Setup ───", Colors.CYAN))
     print()
-    print_info("  1. Hermes will open Tencent iLink QR login in this terminal.")
+    print_info("  1. Cybernetics will open Tencent iLink QR login in this terminal.")
     print_info("  2. Use WeChat to scan and confirm the QR code.")
     print_info(
-        "  3. Hermes will store the returned account_id/token in ~/.hermes/.env."
+        "  3. Cybernetics will store the returned account_id/token in ~/.cybernetics/.env."
     )
     print_info(
         "  4. This adapter supports native text, image, video, and document delivery."
@@ -5666,7 +5666,7 @@ def _setup_signal():
         print_info("    Docker: bbernhard/signal-cli-rest-api")
         print()
         print_info("  After installing, link your account and start the daemon:")
-        print_info('    signal-cli link -n "HermesAgent"')
+        print_info('    signal-cli link -n "CyberneticsAgent"')
         print_info("    signal-cli --account +YOURNUMBER daemon --http 127.0.0.1:8080")
         print()
 
@@ -5807,7 +5807,7 @@ def _configure_platform(platform: dict) -> None:
       4. Env-var hint fallback for plugins that offer no setup helper.
 
     Bundled platform plugins (e.g. IRC) auto-load, so no plugin enable step
-    is needed here. User-installed platform plugins under ~/.hermes/plugins/
+    is needed here. User-installed platform plugins under ~/.cybernetics/plugins/
     must already be in ``plugins.enabled`` before they appear in this menu.
     """
     entry = platform.get("_registry_entry")
@@ -5832,7 +5832,7 @@ def _configure_platform(platform: dict) -> None:
     print(color(f"  ─── {emoji} {label} Setup ───", Colors.CYAN))
     required = entry.required_env if entry else []
     if required:
-        print_info(f"  Set these env vars in ~/.hermes/.env: {', '.join(required)}")
+        print_info(f"  Set these env vars in ~/.cybernetics/.env: {', '.join(required)}")
     else:
         print_info(
             f"  Configure {label} in config.yaml under gateway.platforms.{platform['key']}"
@@ -6419,7 +6419,7 @@ def _gateway_command_inner(args):
                 "  tmux new -s hermes 'cybernetics gateway run'         # persistent via tmux"
             )
             print(
-                "  nohup cybernetics gateway run > ~/.hermes/logs/gateway.log 2>&1 &  # background"
+                "  nohup cybernetics gateway run > ~/.cybernetics/logs/gateway.log 2>&1 &  # background"
             )
             sys.exit(1)
         elif is_container():
@@ -6538,7 +6538,7 @@ def _gateway_command_inner(args):
                 "  tmux new -s hermes 'cybernetics gateway run'         # persistent via tmux"
             )
             print(
-                "  nohup cybernetics gateway run > ~/.hermes/logs/gateway.log 2>&1 &  # background"
+                "  nohup cybernetics gateway run > ~/.cybernetics/logs/gateway.log 2>&1 &  # background"
             )
             print()
             print(
@@ -6886,14 +6886,14 @@ def _gateway_command_inner(args):
                 print("  cybernetics gateway run      # Run in foreground")
                 if is_termux():
                     print(
-                        "  nohup cybernetics gateway run > ~/.hermes/logs/gateway.log 2>&1 &  # Best-effort background start"
+                        "  nohup cybernetics gateway run > ~/.cybernetics/logs/gateway.log 2>&1 &  # Best-effort background start"
                     )
                 elif is_wsl():
                     print(
                         "  tmux new -s hermes 'cybernetics gateway run'         # persistent via tmux"
                     )
                     print(
-                        "  nohup cybernetics gateway run > ~/.hermes/logs/gateway.log 2>&1 &  # background"
+                        "  nohup cybernetics gateway run > ~/.cybernetics/logs/gateway.log 2>&1 &  # background"
                     )
                 elif is_windows():
                     print(
