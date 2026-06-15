@@ -136,7 +136,7 @@ HERMES_AGENT_HELP_GUIDANCE = (
     "it — or when you need to understand your own features, tools, or capabilities, "
     "the documentation at https://hermes-agent.nousresearch.com/docs is your "
     "authoritative reference and always holds the latest, most up-to-date "
-    "information. Load the `hermes-agent` skill with skill_view(name='hermes-agent') "
+    "information. Load the `cybernetics-agent` skill with skill_view(name='cybernetics-agent') "
     "for additional guidance and proven workflows, but treat the docs as the source "
     "of truth when the two differ."
 )
@@ -461,7 +461,7 @@ def format_steer_marker(steer_text: str) -> str:
 
 STEER_CHANNEL_NOTE = (
     "## Mid-turn user steering\n"
-    "While you work, the user can send an out-of-band message that Hermes "
+    "While you work, the user can send an out-of-band message that Cybernetics "
     "appends to the end of a tool result, wrapped exactly as:\n"
     f"{STEER_MARKER_OPEN}\n<their message>\n{STEER_MARKER_CLOSE}\n"
     "Text inside that marker is a genuine message from the user delivered "
@@ -884,8 +884,8 @@ def build_environment_hints() -> str:
                 f"Terminal backend: {backend}. Your `terminal`, `read_file`, "
                 f"`write_file`, `patch`, and `search_files` tools all operate "
                 f"inside this {backend} environment — NOT on the machine "
-                f"where Hermes itself is running. The host OS, home, and cwd "
-                f"of the Hermes process are irrelevant; only the following "
+                f"where Cybernetics itself is running. The host OS, home, and cwd "
+                f"of the Cybernetics process are irrelevant; only the following "
                 f"backend state matters:\n{probe}"
             )
         else:
@@ -895,7 +895,7 @@ def build_environment_hints() -> str:
             hints.append(
                 f"Terminal backend: {backend}. Your `terminal`, `read_file`, "
                 f"`write_file`, `patch`, and `search_files` tools all operate "
-                f"inside {description} — NOT on the machine where Hermes "
+                f"inside {description} — NOT on the machine where Cybernetics "
                 f"itself runs. The backend probe didn't respond at "
                 f"prompt-build time, so the sandbox's current user, $HOME, "
                 f"and working directory are unknown from here. If you need "
@@ -910,7 +910,7 @@ def build_environment_hints() -> str:
     _in_desktop = (os.getenv("HERMES_DESKTOP") or "").strip().lower() in _truthy
     _in_desktop_term = (os.getenv("HERMES_DESKTOP_TERMINAL") or "").strip().lower() in _truthy
     if _in_desktop or _in_desktop_term:
-        _desktop_hint = "Runtime surface: you're running inside the Hermes desktop GUI app."
+        _desktop_hint = "Runtime surface: you're running inside the Cybernetics desktop GUI app."
         if _in_desktop_term:
             _desktop_hint += (
                 " You're in its embedded terminal pane, beside the GUI chat — the user can "
@@ -1131,7 +1131,7 @@ def build_skills_system_prompt(
     Falls back to a full filesystem scan when both layers miss.
 
     External skill directories (``skills.external_dirs`` in config.yaml) are
-    scanned alongside the local ``~/.hermes/skills/`` directory.  External dirs
+    scanned alongside the local ``~/.cybernetics/skills/`` directory.  External dirs
     are read-only — they appear in the index but new skills are always created
     in the local dir.  Local skills take precedence when names collide.
 
@@ -1358,8 +1358,8 @@ def build_skills_system_prompt(
             "for tasks like code review, planning, and testing — load them even for tasks you "
             "already know how to do, because the skill defines how it should be done here.\n"
             "Whenever the user asks you to configure, set up, install, enable, disable, modify, "
-            "or troubleshoot Hermes Agent itself — its CLI, config, models, providers, tools, "
-            "skills, voice, gateway, plugins, or any feature — load the `hermes-agent` skill "
+            "or troubleshoot Cybernetics Agent itself — its CLI, config, models, providers, tools, "
+            "skills, voice, gateway, plugins, or any feature — load the `cybernetics-agent` skill "
             "first. It has the actual commands (e.g. `hermes config set …`, `hermes tools`, "
             "`hermes setup`) so you don't have to guess or invent workarounds.\n"
             "If a skill has issues, fix it with skill_manage(action='patch').\n"
