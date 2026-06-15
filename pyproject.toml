@@ -6,7 +6,7 @@ requires = ["setuptools>=77.0,<83"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "hermes-agent"
+name = "cybernetics-agent"
 version = "0.16.0"
 description = "The self-improving AI agent — creates skills from experience, improves them during use, and runs anywhere"
 readme = "README.md"
@@ -195,23 +195,23 @@ azure-identity = ["azure-identity==1.25.3"]
 termux = [
   # Baseline Android / Termux path for reliable fresh installs.
   "python-telegram-bot[webhooks]==22.6",
-  "hermes-agent[cron]",
-  "hermes-agent[cli]",
-  "hermes-agent[pty]",
-  "hermes-agent[mcp]",
-  "hermes-agent[honcho]",
-  "hermes-agent[acp]",
+  "cybernetics-agent[cron]",
+  "cybernetics-agent[cli]",
+  "cybernetics-agent[pty]",
+  "cybernetics-agent[mcp]",
+  "cybernetics-agent[honcho]",
+  "cybernetics-agent[acp]",
 ]
 termux-all = [
   # Best-effort "install all" profile for Termux. Same policy as [all]:
   # only includes extras that aren't covered by `tools/lazy_deps.py`.
   # Backends like telegram/slack/dingtalk/feishu/honcho lazy-install at
   # first use, so they're no longer eager-installed here.
-  "hermes-agent[termux]",
-  "hermes-agent[google]",
-  "hermes-agent[homeassistant]",
-  "hermes-agent[sms]",
-  "hermes-agent[web]",
+  "cybernetics-agent[termux]",
+  "cybernetics-agent[google]",
+  "cybernetics-agent[homeassistant]",
+  "cybernetics-agent[sms]",
+  "cybernetics-agent[web]",
 ]
 dingtalk = ["dingtalk-stream==0.24.3", "alibabacloud-dingtalk==2.2.42", "qrcode==7.4.2"]
 feishu = ["lark-oapi==1.5.3", "qrcode==7.4.2"]
@@ -257,22 +257,19 @@ all = [
   # [all], `uv sync --locked` on Windows tried to build it from sdist
   # and failed on `make`. Lazy-install routes that build to first use,
   # where the user is expected to have a toolchain available.
-  "hermes-agent[cron]",
-  "hermes-agent[cli]",
-  "hermes-agent[pty]",
-  "hermes-agent[mcp]",
-  "hermes-agent[homeassistant]",
-  "hermes-agent[sms]",
-  "hermes-agent[acp]",
-  "hermes-agent[google]",
-  "hermes-agent[web]",
-  "hermes-agent[youtube]",
+  "cybernetics-agent[cron]",
+  "cybernetics-agent[cli]",
+  "cybernetics-agent[pty]",
+  "cybernetics-agent[mcp]",
+  "cybernetics-agent[homeassistant]",
+  "cybernetics-agent[sms]",
+  "cybernetics-agent[acp]",
+  "cybernetics-agent[google]",
+  "cybernetics-agent[web]",
+  "cybernetics-agent[youtube]",
 ]
 
 [project.scripts]
-hermes = "hermes_cli.main:main"
-hermes-agent = "run_agent:main"
-hermes-acp = "acp_adapter.entry:main"
 cybernetics = "hermes_cli.main:main"
 cybernetics-agent = "run_agent:main"
 cybernetics-acp = "acp_adapter.entry:main"
