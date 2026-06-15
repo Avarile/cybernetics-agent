@@ -24,7 +24,11 @@ Pure helpers that read the agent's state.  AIAgent keeps thin forwarders.
 from __future__ import annotations
 
 import json
+from pathlib import Path as _Path
 from typing import Any, Dict, List, Optional
+
+from branding import BRAND_SHORT
+from hermes_constants import get_default_hermes_root
 
 from agent.prompt_builder import (
     DEFAULT_AGENT_IDENTITY,
@@ -42,6 +46,21 @@ from agent.prompt_builder import (
     TOOL_USE_ENFORCEMENT_MODELS,
 )
 from agent.runtime_cwd import resolve_context_cwd
+
+
+def _display_hermes_root() -> str:
+    """User-friendly display of the HERMES_HOME root (strips profile suffix).
+
+    Returns ``~/.cybernetics`` (POSIX default) or the absolute path if it
+    isn't a child of ``$HOME``.  Mirrors ``hermes_constants.display_hermes_home``
+    but always returns the root rather than the active profile path so
+    cross-profile references in the active-profile hint are correct.
+    """
+    root = get_default_hermes_root()
+    try:
+        return "~/" + str(root.relative_to(_Path.home()))
+    except ValueError:
+        return str(root)
 
 
 def _ra():
@@ -284,10 +303,11 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None) 
         active_profile = _resolve_active_profile_name()
     except Exception:
         active_profile = "default"
+    _root = _display_hermes_root()
     if active_profile == "default":
         stable_parts.append(
-            "Active Hermes profile: default. Other profiles (if any) live "
-            "under ~/.hermes/profiles/<name>/. Each profile has its own "
+            f"Active {BRAND_SHORT} profile: default. Other profiles (if any) live "
+            f"under {_root}/profiles/<name>/. Each profile has its own "
             "skills/, plugins/, cron/, and memories/ that affect a different "
             "session than this one. Do not modify another profile's "
             "skills/plugins/cron/memories unless the user explicitly directs "
@@ -295,10 +315,10 @@ def build_system_prompt_parts(agent: Any, system_message: Optional[str] = None) 
         )
     else:
         stable_parts.append(
-            f"Active Hermes profile: {active_profile}. This session reads "
-            f"and writes ~/.hermes/profiles/{active_profile}/. The default "
-            f"profile's data lives at ~/.hermes/skills/, ~/.hermes/plugins/, "
-            f"~/.hermes/cron/, ~/.hermes/memories/ — those belong to a "
+            f"Active {BRAND_SHORT} profile: {active_profile}. This session reads "
+            f"and writes {_root}/profiles/{active_profile}/. The default "
+            f"profile's data lives at {_root}/skills/, {_root}/plugins/, "
+            f"{_root}/cron/, {_root}/memories/ — those belong to a "
             f"different session run from a different shell. Do NOT modify "
             f"another profile's skills/plugins/cron/memories unless the user "
             f"explicitly directs you to. The cross-profile write guard will "

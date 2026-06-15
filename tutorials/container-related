@@ -1,0 +1,329 @@
+# Container / Docker Tutorial
+
+This document covers everything related to running cybernetics-agent in Docker:
+the image layout, the compose stack, deployment steps, day-to-day operations,
+and the branding state of the container assets.
+
+---
+
+## 1. Files in this repo
+
+| Path                         | Purpose                                                                 |
+| ---------------------------- | ----------------------------------------------------------------------- |
+| `Dockerfile`                 | Main image build (Debian 13 + s6-overlay + Node 22 + uv/Python 3.13)    |
+| `docker-compose.yml`         | Default stack (Linux/macOS, host networking)                            |
+| `docker-compose.windows.yml` | Windows Docker Desktop variant (no host networking, explicit ports)     |
+| `.dockerignore`              | Excludes `.git`, `node_modules`, `tests/`, `website/`, `apps/`, etc.    |
+| `docker/`                    | Runtime supervision scripts (s6 services, stage2 hook, exec shim, etc.) |
+| `scripts/test/Dockerfile.install-test` | Test image used by the install-script test harness            |
+
+The `docker/` directory contains:
+
+- `entrypoint.sh` — legacy entrypoint (kept for reference; image uses s6 `/init`)
+- `main-wrapper.sh` — the actual ENTRYPOINT target; routes args, drops to the
+  `hermes` user via `s6-setuidgid`, exec's the final program
+- `hermes-exec-shim.sh` — `docker exec` privilege-drop shim, installed at
+  `/opt/hermes/bin/hermes` so commands written under `$HERMES_HOME` stay
+  owned by the unprivileged runtime user
+- `stage2-hook.sh` — UID/GID remap, volume chown, config seeding, skills sync
+  (runs as `cont-init.d/01-hermes-setup`)
+- `cont-init.d/015-supervise-perms` — fixes service permissions before start
+- `cont-init.d/02-reconcile-profiles` — re-creates per-profile gateway
+  s6 services after a restart (the `/run/service/` scandir is tmpfs)
+- `s6-rc.d/` — declared s6 services: main process + dashboard
+
+---
+
+## 2. Dockerfile — image layout
+
+The image is multi-stage:
+
+1. **`uv_source`** — `ghcr.io/astral-sh/uv:0.11.6-python3.13-trixie`
+   (pinned by digest) supplies the `uv` and `uvx` binaries.
+2. **`node_source`** — `node:22-bookworm-slim` (pinned by digest). Debian
+   trixie's bundled Node 20 is EOL April 2026; we copy Node 22 LTS + npm +
+   corepack from the upstream image so we stay on a supported runtime.
+3. **Final stage** — `debian:13.4`, glibc 2.41.
+
+Notable runtime layout inside the image:
+
+| Location                          | Contents                                         |
+| --------------------------------- | ------------------------------------------------ |
+| `/opt/hermes`                     | Source tree, `.venv`, frontend bundles           |
+| `/opt/hermes/.venv`               | Python venv (writable by `hermes` user)          |
+| `/opt/hermes/.playwright`         | Playwright browsers (survives volume overlay)    |
+| `/opt/hermes/bin/hermes`          | `docker exec` privilege-drop shim                |
+| `/opt/hermes/ui-tui/dist`         | Prebuilt TUI bundle                              |
+| `/opt/hermes/hermes_cli/web_dist` | Prebuilt web dashboard bundle                    |
+| `/opt/data`                       | Bind-mounted host volume (`~/.hermes`)           |
+| `/init`                           | s6-overlay PID 1                                 |
+| `/usr/bin/tini`                   | Symlink → `/init` (legacy orchestration shim)    |
+
+Key environment variables baked into the image:
+
+```
+PYTHONUNBUFFERED=1
+PLAYWRIGHT_BROWSERS_PATH=/opt/hermes/.playwright
+HERMES_WEB_DIST=/opt/hermes/hermes_cli/web_dist
+HERMES_TUI_DIR=/opt/hermes/ui-tui
+HERMES_HOME=/opt/data
+PATH=/opt/hermes/bin:/opt/hermes/.venv/bin:/opt/data/.local/bin:${PATH}
+npm_config_install_links=false
+```
+
+Layer-caching strategy (so source-only commits don't blow away ~5 min of dep
+work):
+
+1. `package*.json` + workspace `package.json` files only → `npm install` + Playwright
+2. `pyproject.toml` + `uv.lock` only → `uv sync --frozen` with handpicked extras
+   (`all`, `messaging`, `anthropic`, `bedrock`, `azure-identity`, `hindsight`,
+   `matrix`) — explicitly **not** `--all-extras` (would pull `[rl]`, `[yc-bench]`,
+   `[termux-all]`)
+3. `web/` + `ui-tui/` source → frontend builds
+4. Everything else → final `COPY . .`
+5. Editable install: `uv pip install --no-deps -e "."`
+
+Multi-arch: s6-overlay tarballs are downloaded keyed on `TARGETARCH`
+(amd64 → x86_64, arm64 → aarch64). Every tarball is SHA256-verified at
+build time — to bump `S6_OVERLAY_VERSION` you must update all four
+`*_SHA256` ARGs from the upstream release.
+
+Optional build args:
+
+- `HERMES_GIT_SHA` — when passed (`--build-arg HERMES_GIT_SHA=$(git rev-parse HEAD)`),
+  writes `/opt/hermes/.hermes_build_sha` so `hermes dump` and the startup
+  banner report the right commit. CI's `docker-publish.yml` workflow
+  passes `${{ github.sha }}` automatically.
+
+ENTRYPOINT / CMD split:
+
+```
+ENTRYPOINT ["/init", "/opt/hermes/docker/main-wrapper.sh"]
+CMD []
+```
+
+`/init` is s6-overlay's PID 1. It runs `/etc/cont-init.d/*` (stage2 hook,
+profile reconcile) and starts the s6 services, then exec's its remaining
+argv as the container's main program. `main-wrapper.sh` handles arg routing
+and drops to the `hermes` user before exec'ing the final command.
+
+---
+
+## 3. docker-compose.yml — default (Linux/macOS)
+
+Two services share one image:
+
+```yaml
+services:
+  gateway:
+    build: .
+    image: hermes-agent
+    container_name: hermes
+    network_mode: host
+    volumes:
+      - ~/.hermes:/opt/data
+    environment:
+      - HERMES_UID=${HERMES_UID:-10000}
+      - HERMES_GID=${HERMES_GID:-10000}
+    command: ["gateway", "run"]
+
+  dashboard:
+    image: hermes-agent
+    container_name: hermes-dashboard
+    network_mode: host
+    depends_on: [gateway]
+    volumes:
+      - ~/.hermes:/opt/data
+    environment:
+      - HERMES_UID=${HERMES_UID:-10000}
+      - HERMES_GID=${HERMES_GID:-10000}
+    command: ["dashboard", "--host", "127.0.0.1", "--no-open"]
+```
+
+Security defaults:
+
+- Dashboard binds to `127.0.0.1:9119` only. It stores API keys — never bind
+  `0.0.0.0` without putting an authenticating reverse proxy in front.
+- API server is off unless you uncomment `API_SERVER_KEY` and `API_SERVER_HOST`.
+- Optional gateway env knobs for Microsoft Teams and Google Chat are commented
+  in the file — uncomment, fill in, and (for Google Chat) add a volume mount
+  for the SA JSON.
+
+---
+
+## 4. docker-compose.windows.yml — Windows Docker Desktop
+
+Differences from the default:
+
+- No `network_mode: host` (unsupported on Docker Desktop for Windows)
+- Explicit `127.0.0.1:9119:9119` port mapping for the dashboard
+- `${USERPROFILE}/.hermes` Windows-style volume path
+- Pulls `nousresearch/hermes-agent:latest` from a registry (no local build)
+- Uses `--insecure` to bind the dashboard to `0.0.0.0` inside the container
+  (the published port is still localhost-only on the host)
+
+Run with:
+
+```
+docker compose -f docker-compose.windows.yml up -d
+```
+
+---
+
+## 5. Deploy — step by step
+
+### 5.1 Prerequisites
+
+- Docker Engine 24+ with Compose v2 (`docker compose version`)
+- ~3–5 GB free for the image (Node 22 + Playwright Chromium + Python deps)
+- `~/.hermes` directory on the host (becomes `/opt/data` inside)
+
+### 5.2 Set UID/GID
+
+So container-created files stay owned by your host user:
+
+```sh
+export HERMES_UID=$(id -u)
+export HERMES_GID=$(id -g)
+```
+
+Without these, the container falls back to UID/GID 10000 — fine, but host
+ownership will look unusual.
+
+### 5.3 Pre-create the host volume
+
+```sh
+mkdir -p ~/.hermes
+```
+
+### 5.4 Build the image
+
+```sh
+docker compose build
+```
+
+Cold build = several minutes. Subsequent builds reuse cached layers unless
+`pyproject.toml`, `uv.lock`, or `package*.json` changed.
+
+To bake the git SHA into the image:
+
+```sh
+docker compose build --build-arg HERMES_GIT_SHA=$(git rev-parse HEAD)
+```
+
+### 5.5 Start the stack
+
+```sh
+docker compose up -d
+```
+
+This launches:
+
+- `gateway` — main agent (`gateway run`) under s6-overlay supervision
+- `dashboard` — web UI on `127.0.0.1:9119`, `depends_on: gateway`
+
+Both use `network_mode: host`, so no `-p` mappings are required.
+
+### 5.6 Verify
+
+```sh
+docker compose ps
+docker compose logs -f gateway
+```
+
+Watch for s6 stage2 init followed by service startup. The gateway should
+report ready within ~10 seconds on warm starts.
+
+### 5.7 Access the dashboard
+
+- Local: `http://127.0.0.1:9119`
+- Remote: SSH tunnel — `ssh -L 9119:localhost:9119 user@host`. **Never**
+  bind `0.0.0.0` without putting an authenticating proxy in front.
+
+---
+
+## 6. Day-to-day operations
+
+```sh
+# Run a CLI command inside the container (uses the privilege-drop shim)
+docker compose exec gateway hermes <subcommand>
+
+# Restart just the gateway (dashboard stays up)
+docker compose restart gateway
+
+# Tail logs from both services
+docker compose logs -f
+
+# Stop the stack; ~/.hermes persists on the host
+docker compose down
+
+# Pull a new published image and recreate (registry workflow only)
+docker compose pull && docker compose up -d
+```
+
+The `hermes-exec-shim.sh` at `/opt/hermes/bin/hermes` (earliest on `PATH`)
+auto-drops privileges from root to the unprivileged runtime user when
+called via `docker exec`. This keeps files written under `/opt/data`
+from ending up root-owned and unreadable to the supervised services.
+Opt out with `HERMES_DOCKER_EXEC_AS_ROOT=1` if you really need root.
+
+---
+
+## 7. Optional integrations
+
+Uncomment and fill in the relevant section in `docker-compose.yml`:
+
+- **OpenAI-compatible API server** — set `API_SERVER_HOST` + `API_SERVER_KEY`
+  (key is mandatory). See `docs/user-guide/api-server.md`.
+- **Microsoft Teams** — register a bot at `dev.botframework.com`, set
+  `TEAMS_CLIENT_ID`, `TEAMS_CLIENT_SECRET`, `TEAMS_TENANT_ID`,
+  `TEAMS_ALLOWED_USERS`, optionally `TEAMS_PORT`.
+- **Google Chat** — set `GOOGLE_CHAT_PROJECT_ID`,
+  `GOOGLE_CHAT_SUBSCRIPTION_NAME`, `GOOGLE_CHAT_SERVICE_ACCOUNT_JSON`
+  (must be a mount path), `GOOGLE_CHAT_ALLOWED_USERS`. Add a volume entry
+  for the SA JSON file.
+
+---
+
+## 8. Branding state (as of 2026-06-15)
+
+The container assets still carry Hermes / Nous Research naming throughout.
+Tiered by how risky it is to rename:
+
+### Cosmetic-only — safe to rebrand now
+
+- `docker-compose.yml`: `image: hermes-agent`, `container_name: hermes` /
+  `hermes-dashboard`, header comment
+- `docker-compose.windows.yml`: `image: nousresearch/hermes-agent:latest`
+  (← external-facing registry leak), `container_name`, header comment
+
+### Deep coupling — deferred (~2,600 refs)
+
+These propagate through `stage2-hook.sh`, `main-wrapper.sh`,
+`hermes-exec-shim.sh`, the cont-init scripts, `hermes_cli/build_info.py`,
+`tools/lazy_deps.py`, supervised s6 services, the legacy `/usr/bin/tini`
+shim (#34192), and external orchestration templates (Hostinger catalog):
+
+- `/opt/hermes` install root
+- `HERMES_HOME`, `HERMES_UID`, `HERMES_GID`, `HERMES_WEB_DIST`,
+  `HERMES_TUI_DIR`, `HERMES_GIT_SHA`, `HERMES_DOCKER_EXEC_AS_ROOT`
+- `hermes` Linux user (UID 10000)
+- `/opt/hermes/.hermes_build_sha`
+- Image internal script names (`hermes-exec-shim.sh`, etc.)
+
+A future rename pass should treat these as one atomic migration, not a
+piecemeal edit.
+
+---
+
+## 9. Troubleshooting
+
+| Symptom                                              | Likely cause / fix                                                                                  |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `tini: No such file or directory`                    | External wrapper pinned to `/usr/bin/tini`; the symlink shim at line 86 of the Dockerfile fixes it. |
+| Dashboard unreachable on Windows                     | You're on the default compose file; use `-f docker-compose.windows.yml`.                            |
+| Files in `~/.hermes` owned by UID 10000              | `HERMES_UID` / `HERMES_GID` not exported before `docker compose up`.                                |
+| Chat tab dies with `[session ended]` / 502           | `HERMES_TUI_DIR` not pointing at the prebuilt bundle — see Dockerfile comment near line 270.        |
+| `hermes dump` reports `(unknown)` upstream sha       | Image built without `--build-arg HERMES_GIT_SHA=...`; CI sets this automatically.                   |
+| `ModuleNotFoundError: hindsight_client` after update | Hindsight client lost on image update — already baked in current Dockerfile (line 165 comment).     |
+| `EACCES` on `uv pip install` from lazy_deps          | `.venv` ownership broken; the `chown -R hermes:hermes /opt/hermes/.venv` step at line 208 fixes it. |

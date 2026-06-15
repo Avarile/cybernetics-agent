@@ -63,6 +63,9 @@ _HERMES_CORE_TOOLS = [
     "send_message",
     # Home Assistant smart home control (gated on HASS_TOKEN via check_fn)
     "ha_list_entities", "ha_get_state", "ha_list_services", "ha_call_service",
+    # Personal knowledge base (Teable; gated on TEABLE_TOKEN via check_fn)
+    "knowledge_search", "knowledge_get", "knowledge_list_types",
+    "knowledge_create", "knowledge_update", "knowledge_archive",
     # Kanban multi-agent coordination — only in schema when the agent is
     # spawned as a kanban worker (HERMES_KANBAN_TASK env set) or the current
     # profile explicitly enables the kanban toolset. Gated via check_fn in
@@ -256,6 +259,19 @@ TOOLSETS = {
         "description": "Home Assistant smart home control and monitoring",
         "tools": ["ha_list_entities", "ha_get_state", "ha_list_services", "ha_call_service"],
         "includes": []
+    },
+
+    "knowledge": {
+        "description": (
+            "Personal knowledge base — search, read, write, and archive "
+            "entries in the user's Teable knowledges/knowledge_type tables. "
+            "Gated on TEABLE_TOKEN via check_fn."
+        ),
+        "tools": [
+            "knowledge_search", "knowledge_get", "knowledge_list_types",
+            "knowledge_create", "knowledge_update", "knowledge_archive",
+        ],
+        "includes": [],
     },
 
     "kanban": {

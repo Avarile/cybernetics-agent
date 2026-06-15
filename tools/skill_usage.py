@@ -65,6 +65,7 @@ _VALID_STATES = {STATE_ACTIVE, STATE_STALE, STATE_ARCHIVED}
 # substitute for ``curator.prune_builtins: false``, which exempts ALL built-ins.
 PROTECTED_BUILTIN_SKILLS: Set[str] = {
     "plan",
+    "knowledge",
 }
 
 

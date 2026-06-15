@@ -1,0 +1,47 @@
+in the implementation of the data-centre integration, File inventory & reversibility
+
+  2 NEW files (full removal = rm):
+  1. tools/teable_knowledge_tool.py
+  2. skills/knowledge/SKILL.md (also creates the skills/knowledge/ directory)
+
+  2 MODIFIED files (revert via git checkout):
+  3. toolsets.py — two edits: 6 names appended to _HERMES_CORE_TOOLS (around line 65) + one "knowledge" entry in the TOOLSETS dict (around line 255)
+  4. tools/skill_usage.py — one edit: add "knowledge" to the PROTECTED_BUILTIN_SKILLS set (line 66)
+
+  Zero files outside the repo are modified by the code change itself.
+
+  Removal procedure (clean uninstall)
+
+  # Inside repo
+  rm tools/teable_knowledge_tool.py
+  rm -rf skills/knowledge/
+  git checkout -- toolsets.py tools/skill_usage.py
+
+  That's it. All four touch-points are reverted, and the auto-discovery loop at tools/registry.py:57 will no longer find the tool file (so the tools vanish from the schema on next CLI start). The skill index rebuilder at
+  agent/prompt_builder.py:1118 will no longer find skills/knowledge/SKILL.md (so the skill vanishes from the system prompt).
+
+  User-side state that may linger
+
+  These are NOT created by the code change — they're side-effects of running it. All optional to clean:
+
+  ┌────────────────────────────────────────┬──────────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │                  Path                  │                               What                               │                                                    Cleanup                                                    │
+  ├────────────────────────────────────────┼──────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ~/.hermes/skills/knowledge/            │ Seeded copy of the bundled skill (created by sync_skills() on    │ rm -rf ~/.hermes/skills/knowledge/                                                                            │
+  │                                        │ hermes update)                                                   │                                                                                                               │
+  ├────────────────────────────────────────┼──────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ~/.hermes/skills/.bundled_manifest     │ Has a knowledge:<hash> line                                      │ Auto-cleaned on next sync_skills() — the stale-entry pruner at tools/skills_sync.py:600 removes it once the   │
+  │                                        │                                                                  │ bundled source is gone                                                                                        │
+  ├────────────────────────────────────────┼──────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ~/.hermes/skills/.usage.json           │ Telemetry entry if you ever viewed the skill                     │ Harmless; cybernetics curator would prune eventually. Manual: edit the JSON or rm (recreated empty on next    │
+  │                                        │                                                                  │ use)                                                                                                          │
+  ├────────────────────────────────────────┼──────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ ~/.hermes/.skills_prompt_snapshot.json │ Cache of the rendered skill index                                │ Auto-invalidated by mtime check; rm is safe but unnecessary                                                   │
+  ├────────────────────────────────────────┼──────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ TEABLE_TOKEN env var                   │ Wherever you set it                                              │ Unset it                                                                                                      │
+  └────────────────────────────────────────┴──────────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  No external side effects: no Teable schema changes (the API is read/write to records only), no migrations, no config-file writes by the agent, no DB writes outside Teable, no network calls during install.
+
+  Risk profile: the integration is purely additive and gated behind TEABLE_TOKEN. If you delete just the tool file and leave the rest, the tools fail to register but nothing else breaks (toolset entry just references missing
+  tool names, which the registry silently skips). So even a partial cleanup is safe.

@@ -10,6 +10,7 @@ import subprocess
 import shutil
 from pathlib import Path
 
+from branding import BRAND_NAME, BRAND_SHORT
 from hermes_cli.config import get_project_root, get_hermes_home, get_env_path
 from hermes_cli.env_loader import load_hermes_dotenv
 from hermes_constants import display_hermes_home
@@ -1105,13 +1106,13 @@ def run_doctor(args):
         else:
             check_info(f"{_DHH}/SOUL.md exists but is empty — edit it to customize personality")
     else:
-        check_warn(f"{_DHH}/SOUL.md not found", "(create it to give Hermes a custom personality)")
+        check_warn(f"{_DHH}/SOUL.md not found", f"(create it to give {BRAND_SHORT} a custom personality)")
         if should_fix:
             soul_path.parent.mkdir(parents=True, exist_ok=True)
             soul_path.write_text(
-                "# Hermes Agent Persona\n\n"
-                "<!-- Edit this file to customize how Hermes communicates. -->\n\n"
-                "You are Hermes, a helpful AI assistant.\n",
+                f"# {BRAND_NAME} Persona\n\n"
+                f"<!-- Edit this file to customize how {BRAND_SHORT} communicates. -->\n\n"
+                f"You are {BRAND_SHORT}, a helpful AI assistant.\n",
                 encoding="utf-8",
             )
             check_ok(f"Created {_DHH}/SOUL.md with basic template")

@@ -1,0 +1,300 @@
+ ---
+  Cybernetic-Agent — Behavioral & Decision Architecture
+
+  1. Module Ownership (separate-view map)
+
+  The runtime is split across four physical layers. Each layer owns a class of decisions; the agent's "behavior" emerges from how they hand off to each other.
+
+  Layer A — Lifecycle & Entry (root + agent/agent_init.py)
+
+  ┌────────────────────────────┬───────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │           Module           │                                               Owns                                                │
+  ├────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ run_agent.py (239KB)       │ Process bootstrap, arg parsing, transport selection (CLI/TUI/ACP/gateway), session restore        │
+  ├────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/agent_init.py (88KB) │ Agent object construction: config load, credential resolution, tool/skill assembly, memory wiring │
+  ├────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/process_bootstrap.py │ Pre-import probes (jiter, native deps), low-level env hardening                                   │
+  ├────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/runtime_cwd.py       │ Working-directory contract used by coding_context and subdirectory_hints                          │
+  └────────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  Layer B — Turn Engine (agent/)
+
+  ┌─────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │                     Module                      │                                                Owns                                                │
+  ├─────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/conversation_loop.py (241KB / 4248 lines) │ The brain. Outer iteration loop, inner retry loop, post-response dispatch (tools vs text vs empty) │
+  ├─────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/turn_context.py                           │ Per-turn prologue: sanitize input, restore prompt, preflight compression, prefetch memory          │
+  ├─────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/turn_finalizer.py                         │ Per-turn epilogue: budget summary, trajectory save, memory-review nudge                            │
+  ├─────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/turn_retry_state.py                       │ One-shot recovery flags (auth retry, image shrink, thinking-sig, 1M-context, etc.)                 │
+  ├─────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/iteration_budget.py                       │ Thread-safe iteration counter w/ refund + grace-call mechanism                                     │
+  ├─────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/tool_executor.py (1428 lines)             │ Concurrent (≤8 workers) vs sequential tool dispatch; result integration                            │
+  ├─────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/agent_runtime_helpers.py (2527 lines)     │ Message repair, tool-call validation, response normalization across providers                      │
+  ├─────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/error_classifier.py (1365 lines)          │ Maps provider errors → recovery strategy (retry/compress/fallback/auth-refresh/image-shrink)       │
+  ├─────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/think_scrubber.py                         │ Strip/store reasoning blocks; <SCRATCHPAD>↔<think> translation                                     │
+  ├─────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/message_sanitization.py                   │ Repair JSON, strip surrogates, fix role alternation                                                │
+  ├─────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/prompt_caching.py                         │ Anthropic cache_control markers (system + last 3 msgs)                                             │
+  ├─────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/stream_diag.py                            │ Stream-health watchdog: 90s stale + 60s read timeout + partial-stream recovery                     │
+  └─────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  Layer C — Prompt & Context (agent/)
+
+  ┌──────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │                      Module                      │                                                Owns                                                │
+  ├──────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/system_prompt.py                           │ Three-tier system prompt assembly (stable / context / volatile)                                    │
+  ├──────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/prompt_builder.py (78KB / 1621 lines)      │ Skill index, context-file inclusion (AGENTS.md, CLAUDE.md, .cursorrules), threat-scanned injection │
+  ├──────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/context_engine.py                          │ Pluggable should_compress() interface                                                              │
+  ├──────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/context_compressor.py (113KB / 2374 lines) │ LLM-driven lossy summarization with head/tail preservation, image stripping, iterative re-merge    │
+  ├──────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/conversation_compression.py                │ Compression triggers + 413/overflow handling integration                                           │
+  ├──────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/coding_context.py                          │ Coding posture (auto/focus/on/off), workspace snapshot, verify commands                            │
+  ├──────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/subdirectory_hints.py                      │ Lazy AGENTS.md / CLAUDE.md discovery appended to tool results                                      │
+  ├──────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/memory_manager.py + memory_provider.py     │ Built-in + one external memory provider; prefetch / sync lifecycle                                 │
+  ├──────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/skill_preprocessing.py                     │ Template-var substitution, inline !shell`` expansion in skill bodies                               │
+  └──────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  Layer D — Tool & Skill Surface (tools/ + root)
+
+  ┌─────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │                         Module                          │                                                           Owns                                                           │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ toolsets.py (root)                                      │ Named toolset groups; _HERMES_CORE_TOOLS allowlist; coding-posture toolset                                               │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tools/registry.py                                       │ Tool registration, check_fn() probes (30s TTL), _generation cache key                                                    │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ model_tools.py (root, 56KB)                             │ get_tool_definitions() — final schema list given to the LLM, with dynamic schema rewrites                                │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tools/tool_search.py                                    │ Progressive disclosure: hide MCP/plugin tools behind tool_search/tool_describe/tool_call when they exceed 10% of context │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tools/schema_sanitizer.py                               │ Strict-backend (llama.cpp/Kimi) schema fixes                                                                             │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tools/skills_hub.py (148KB)                             │ Skill catalog, hub install/lock                                                                                          │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tools/skill_usage.py                                    │ PROTECTED_BUILTIN_SKILLS = {"plan"}, active/stale/archived state machine                                                 │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tools/skills_tool.py + skills_sync.py + skills_guard.py │ User-facing skill ops, sync, guardrails                                                                                  │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/curator.py (78KB)                                 │ Background skill curator: idle-trigger cron, LLM consolidation, state transitions                                        │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tools/approval.py (77KB)                                │ Command approval cascade (hardline → YOLO → patterns → allowlist → router → smart)                                       │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tools/tirith_security.py                                │ External binary scan for homograph URLs, terminal injection, ANSI escapes                                                │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tools/checkpoint_manager.py (60KB)                      │ Shadow-git snapshots before any mutating op                                                                              │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tools/clarify_tool.py + clarify_gateway.py              │ LLM-initiated user clarification                                                                                         │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tools/interrupt.py                                      │ Per-thread interrupt flags                                                                                               │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/tool_guardrails.py                                │ Loop detection: exact-failure block, same-tool warnings, idempotent no-progress                                          │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ agent/file_safety.py                                    │ Path traversal + sensitive-file gating                                                                                   │
+  ├─────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ tools/tool_result_storage.py                            │ Per-tool truncation + per-turn 200KB budget spill-to-disk                                                                │
+  └─────────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  Layer E — Platform Surfaces (gateway/, acp_adapter/, tui_gateway/, ui-tui/, web/)
+
+  The brain is platform-agnostic. Each surface implements a transport that delivers user messages to and assistant messages from Layer B. Gateway (Slack/Discord/WhatsApp/Telegram/Feishu) goes through gateway/run.py (773KB),
+  which owns approval queuing and stream dispatch.
+
+  ---
+  2. Decision-Making Logic (the brain in detail)
+
+  Everything below happens inside one run_conversation() call. This is the agent's actual decision policy.
+
+  2.1 The outer loop
+
+  run_conversation()  [agent/conversation_loop.py:371-4244]
+  │
+  ├─ turn_context.build_turn_context()           [prologue: sanitize, prompt, preflight compress, memory prefetch]
+  │
+  ├─ while api_call_count < max_iterations AND iteration_budget.remaining > 0:    [L461]
+  │   │
+  │   ├─ inner retry loop  [L811+]               [credentials / image shrink / context / fallback]
+  │   │   └─ provider API call
+  │   │
+  │   ├─ post-response dispatch  [L3300+]
+  │   │    ├─ tool_calls present  → execute, append results, continue   [L3502+]
+  │   │    ├─ text-only + finish_reason=="stop"  → break                  [L4164]
+  │   │    ├─ truncated response → length-continuation retry (3 max)     [L1315-1508]
+  │   │    └─ empty response   → thinking prefill or fallback (3 max)    [L3970+]
+  │   │
+  │   └─ post-turn: should_compress(real_usage)? → compress              [L3815]
+  │
+  ├─ grace call (1 free API call after budget==0)  [L480-481]
+  └─ finalize_turn() [agent/turn_finalizer.py:30]
+
+  2.2 The five "decide what to do next" branches
+
+  Each branch is the agent's actual choice surface — every other piece of the system feeds into one of these:
+
+  ┌──────────────────────────────┬──────────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────┐
+  │            Branch            │                          Decided by                          │                                     Trigger                                      │
+  ├──────────────────────────────┼──────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ Continue with tool execution │ Presence of tool_calls, validated args                       │ conversation_loop.py:3502                                                        │
+  ├──────────────────────────────┼──────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ Stop and reply               │ No tool calls + content + finish_reason="stop"               │ conversation_loop.py:4164                                                        │
+  ├──────────────────────────────┼──────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ Length-continuation          │ finish_reason="length" + partial text                        │ conversation_loop.py:1315-1508 (3 retries)                                       │
+  ├──────────────────────────────┼──────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ Empty-response recovery      │ No content, no tools                                         │ conversation_loop.py:4013-4101 (thinking prefill, then fallback, then "(empty)") │
+  ├──────────────────────────────┼──────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────┤
+  │ Hard exit                    │ Interrupt, budget==0 + no grace, terminal classifier verdict │ L466-486                                                                         │
+  └──────────────────────────────┴──────────────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────┘
+
+  2.3 What shapes those decisions before the LLM ever sees the turn
+
+  Three-tier system prompt (system_prompt.py:62-403), cached once per session, rebuilt only on compression:
+
+  - Stable tier — identity (SOUL.md), tool-behavior guidance (memory/session_search/skills/kanban only if those tools are present), model-family operational rules (Google vs OpenAI/Codex), skills index, env hints,
+  coding-posture blocks (coding_context.coding_system_blocks())
+  - Context tier — system_message + AGENTS.md/CLAUDE.md/.cursorrules from CWD, all threat-scanned before injection (prompt_builder.py:45-61)
+  - Volatile tier — built-in memory, USER.md, external memory snapshot, timestamp (date-only for byte-stability)
+
+  invalidate_system_prompt() (system_prompt.py:406) is the only path that rebuilds the cache.
+
+  2.4 What shapes the tool surface the LLM sees
+
+  The LLM is shown a deliberately curated set, not the full inventory. Pipeline at model_tools.py:272-536:
+
+  1. Toolset resolution — enabled minus disabled (subtract-last for strict removal)
+  2. check_fn() probes (30s TTL) — Docker/Modal/env-var availability
+  3. Dynamic schema rewrites — execute_code, discord, browser_navigate are re-described to mention only available companions, so the model cannot hallucinate calls to missing tools
+  4. Tool-search activation (tools/tool_search.py:234) — when deferrable MCP/plugin tools exceed threshold_pct * context (default 10%), they are physically removed from the schema and replaced by 3 bridge tools (tool_search,
+  tool_describe, tool_call)
+  5. Schema sanitization — llama.cpp/Kimi-compatible shape fixes
+  6. Skills index injected into system prompt — filtered by platform, disabled list, required tools/toolsets; "compact categories" demoted (names kept, descriptions dropped) under coding-focus posture
+
+  This is the single most important decision-shaping mechanism: if a tool isn't here, the model literally cannot pick it.
+
+  2.5 Compression heuristic (the only "what to forget" decision)
+
+  context_compressor.py:
+
+  - Preflight (turn_context.py:248-314) — rough estimate before API call; loops ≤3 passes; skips if last real usage was below the estimate (should_defer_preflight_to_real_usage)
+  - Post-turn (conversation_loop.py:3815) — fires when real prompt_tokens >= threshold_tokens (default 75%)
+  - Algorithm: prune old tool results → strip pre-last-image multimodal → preserve first 3 + budget-protected tail → LLM-summarize middle → iteratively merge prior summary
+  - Budget: min 2000 / ratio 20% / ceiling 12000 tokens
+  - Summary prefix explicitly tells the model: treat as reference, latest user message always wins, do not resume stale tasks
+
+  2.6 Retry / recovery ladder (per API call)
+
+  Strict order in conversation_loop.py:811+. Each is one-shot per iteration via TurnRetryState:
+
+  1. Nous rate-limit guard (cross-session breaker)
+  2. API call attempt + pre_api_request hook
+  3. Auth refresh — Nous OAuth, Anthropic OAuth, Copilot, xAI Codex
+  4. Billing/entitlement refresh on 401
+  5. Credential-pool rotation on 429
+  6. Image shrink on size errors
+  7. Multimodal tool-content downgrade for strict providers
+  8. Disable 1M-context beta on 403
+  9. Strip reasoning_details on thinking-signature 400
+  10. Long-context tier reduction (Anthropic 1M→200K) on 429
+  11. Activate fallback provider (rate-limit + billing)
+  12. Compress 1–3× on 413/overflow
+  13. Jittered exponential backoff (5s base, 120s cap)
+
+  Terminal failures bubble up with classification from error_classifier.py.
+
+  2.7 The action-gating cascade (tool execution → actually running)
+
+  A tool call passes through 7 gates before any side effect (assembled from model_tools.py:922-1139 and tools/approval.py):
+
+  [1] Tool-search bridge unwrap + scope check        model_tools.py:933
+  [2] Tool request middleware (arg rewrite)          model_tools.py:1000
+  [3] pre_tool_call plugin hook (may block)          model_tools.py:1031
+  [4] ACP/Zed edit approval (IDE-only)               model_tools.py:1070
+  [5] Terminal-only command-approval cascade:        tools/approval.py
+      [5a] Hardline block — UNCONDITIONAL                  L1060
+           rm -rf /, mkfs, dd of=/dev/sd*, shutdown,
+           kill -1, fork bomb. No bypass exists.
+      [5b] YOLO bypass (frozen env var)                    L1067
+      [5c] Dangerous-pattern detection (47 regexes)        L1070
+      [5d] Session-scoped allowlist check                  L1075
+      [5e] Approval-mode router                            L1102
+           CLI → interactive [once/session/always/deny]
+           Gateway → /approve|/deny over async queue
+           Cron → respects approvals.cron_mode
+      [5f] Smart approval — aux LLM verdict                L1382
+           APPROVE | DENY | ESCALATE (overrides patterns)
+      [5g] Tirith security scan (subprocess)         tools/tirith_security.py
+           Homograph URLs, terminal injection, ANSI escapes
+  [6] Execution middleware (metrics, final checks)   model_tools.py:1129
+  [7] TOOL RUNS
+      └─ Post-exec: checkpoint (pre-mutation), output truncation,
+         per-turn 200KB spill, tool_guardrails loop detection
+
+  Key invariants:
+  - Hardline block is unbypassable — even YOLO, even cron approve-mode.
+  - Tirith findings + pattern findings are merged into a single approval request — so a gateway force=True reply can't bypass one because only the other was shown.
+  - Checkpoints fire before mutation, not after. Rollback is always available.
+  - Interrupts are per-thread, not per-process. Parallel sessions don't interfere.
+
+  2.8 Loop guardrails (agent/tool_guardrails.py:224-375)
+
+  Behavioral safety net the agent imposes on itself:
+
+  ┌───────────────────────────────────────────────────┬──────────────────────────────────────────────────┐
+  │                      Pattern                      │                      Action                      │
+  ├───────────────────────────────────────────────────┼──────────────────────────────────────────────────┤
+  │ Identical (tool + args) failing N times           │ hard stop (if hard_stop_enabled)                 │
+  ├───────────────────────────────────────────────────┼──────────────────────────────────────────────────┤
+  │ Same tool failing N times (any args)              │ warning appended to result                       │
+  ├───────────────────────────────────────────────────┼──────────────────────────────────────────────────┤
+  │ Read-only tool returning identical result N times │ warning suggesting use of result or query change │
+  └───────────────────────────────────────────────────┴──────────────────────────────────────────────────┘
+
+  2.9 Skill curation (long-horizon behavior shaping)
+
+  agent/curator.py:255-310 — runs every interval_hours (7d default) when agent is idle > min_idle_hours (2h):
+
+  - State machine: active → stale (30d unused) → archived (90d unused)
+  - First-run deferred a full interval so a fresh install doesn't archive built-ins
+  - PROTECTED_BUILTIN_SKILLS = {"plan"} (skill_usage.py:66) — never archived even with prune_builtins: true
+  - Pinned + hub-installed + bundled-manifest skills bypass all transitions
+  - LLM review pass (curator.py:344) consolidates narrow sibling skills under umbrella names — never deletes, only archives
+
+  ---
+  3. Notable / surprising decisions
+
+  1. Grace call — after budget hits zero, one final API call is granted (conversation_loop.py:480). If that still returns no final text, a toolless summary request is fired that doesn't consume budget at all.
+  2. System prompt rebuilds only on compression — the date-only timestamp in volatile tier keeps it byte-stable across an entire calendar day so prefix-cache holds.
+  3. Subdirectory hints are appended to tool results, not the system prompt — so cwd discovery never invalidates the cache.
+  4. Smart approval is an LLM-driven escape valve — pattern matching is just the first stage. An auxiliary LLM can override pattern findings, catching false positives like python -c "print('hi')".
+  5. Tool descriptions are rewritten if their referenced companions are unavailable — prevents a class of hallucinated tool calls that other agent frameworks suffer from.
+  6. Tool-search activation is a context budget decision, not a discovery feature — core tools are never deferred; only MCP/plugin tools are hidden when they'd eat >10% of context.
+  7. Compression summary is explicitly demoted with SUMMARY_PREFIX — instructs the model to never resume stale work from the summary; latest user msg always wins. The compressor also recognizes and strips its own past prefix
+  versions to prevent re-compression drift.
+  8. Checkpoints use shared shadow-git (GIT_DIR/GIT_WORK_TREE/GIT_INDEX_FILE) so the user's .git never sees agent commits. Pre-mutation, not post.
+
+  ---
+  4. One-paragraph executive summary
+
+  The agent runs a single run_conversation() loop (agent/conversation_loop.py:371) that, on each iteration, calls a provider with a cached three-tier system prompt, then routes the response into one of five branches: execute
+  tool calls, return text, length-continue, recover from empty, or hard-exit. Tool visibility is curated in model_tools.get_tool_definitions() — toolsets are intersected, availability is probed, descriptions are rewritten to
+  remove references to absent tools, and large MCP/plugin surfaces are hidden behind a tool_search bridge when they would consume >10% of context. Every tool execution passes a 7-gate cascade (scope, middleware, plugin block,
+  IDE approval, command approval cascade with hardline block + smart LLM verdict, tirith scan, execution middleware), then post-exec checkpoint + truncation + loop guardrails contain its effects. Context is preserved with an
+  LLM-driven 75%-threshold compressor that explicitly demotes past summaries so the model never resumes stale tasks. Memory, coding posture, and skill curation operate around this loop as out-of-band shapers — they change what
+   the agent knows and reaches for, but the loop's decision policy itself lives entirely in conversation_loop.py.
