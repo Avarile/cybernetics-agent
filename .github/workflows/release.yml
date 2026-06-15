@@ -1,0 +1,144 @@
+name: Release
+
+# Build and publish a source tarball whenever a `v*` tag is pushed.
+# The tarball is produced with `git archive`, which respects `export-ignore`
+# rules in `.gitattributes`, so the artifact is a clean snapshot of the
+# tagged commit with no CI scaffolding, editor configs, or local caches.
+#
+# Usage:
+#   git tag v0.1.0
+#   git push origin v0.1.0
+#
+# Manual dry run (no upload):
+#   gh workflow run release.yml -f tag=v0.1.0
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build (e.g. v0.1.0). Dry-run only — no release is created.'
+        required: true
+        type: string
+
+permissions:
+  contents: write  # required to create the GitHub Release and upload assets
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      # Two-step checkout: shallow checkout at the default ref first so we
+      # can validate the dispatch input before letting actions/checkout
+      # consume it as a ref. Tag pushes are already constrained by git's
+      # ref-naming rules, but workflow_dispatch input is free-form text
+      # and must be sanitised.
+      - name: Validate tag input
+        id: validate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_TAG: ${{ github.event.inputs.tag }}
+          PUSHED_REF: ${{ github.ref }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            TAG="$DISPATCH_TAG"
+          else
+            TAG="${PUSHED_REF#refs/tags/}"
+          fi
+          # Strict SemVer-ish format: vMAJOR.MINOR.PATCH with optional
+          # pre-release / build suffix made of [A-Za-z0-9.-]. Rejecting
+          # anything else blocks shell metacharacters before TAG is
+          # interpolated into later run: blocks.
+          if ! printf '%s' "$TAG" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$'; then
+            echo "::error::Refusing to build from tag '$TAG' — must match vMAJOR.MINOR.PATCH[.-suffix]"
+            exit 1
+          fi
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          # Safe to interpolate — validate step rejected anything outside
+          # the SemVer-ish charset.
+          ref: ${{ steps.validate.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Build tarball
+        id: build
+        env:
+          TAG: ${{ steps.validate.outputs.tag }}
+          VERSION: ${{ steps.validate.outputs.version }}
+        run: |
+          ARTIFACT="cybernetics-agent-${VERSION}.tar.gz"
+
+          # `git archive` honours .gitattributes export-ignore and only
+          # ships tracked files — no node_modules, no venv, no caches.
+          # The --prefix places everything inside a top-level directory
+          # so `tar xzf` doesn't litter the user's cwd.
+          git archive \
+            --format=tar.gz \
+            --prefix="cybernetics-agent-${VERSION}/" \
+            --output="$ARTIFACT" \
+            "$TAG"
+
+          sha256sum "$ARTIFACT" > "${ARTIFACT}.sha256"
+
+          echo "artifact=$ARTIFACT" >> "$GITHUB_OUTPUT"
+          echo "checksum=${ARTIFACT}.sha256" >> "$GITHUB_OUTPUT"
+
+          echo "--- Artifact summary ---"
+          ls -lh "$ARTIFACT" "${ARTIFACT}.sha256"
+          cat "${ARTIFACT}.sha256"
+
+      - name: Upload tarball as workflow artifact
+        # Always upload so workflow_dispatch dry-runs produce a downloadable
+        # artifact even when no Release is created.
+        uses: actions/upload-artifact@v4
+        with:
+          name: cybernetics-agent-${{ steps.validate.outputs.version }}
+          path: |
+            ${{ steps.build.outputs.artifact }}
+            ${{ steps.build.outputs.checksum }}
+          retention-days: 30
+
+      - name: Create GitHub Release
+        # Only fires on real tag pushes — workflow_dispatch is a dry run.
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.validate.outputs.tag }}
+          name: ${{ steps.validate.outputs.tag }}
+          generate_release_notes: true
+          files: |
+            ${{ steps.build.outputs.artifact }}
+            ${{ steps.build.outputs.checksum }}
+          body: |
+            ## Install
+
+            One-liner (Linux, macOS, WSL2):
+
+            ```bash
+            curl -fsSL https://raw.githubusercontent.com/Avarile/cybernetics-agent/${{ steps.validate.outputs.tag }}/scripts/install.sh \
+              | bash -s -- --branch ${{ steps.validate.outputs.tag }}
+            ```
+
+            Or download the tarball directly:
+
+            ```bash
+            curl -L -o cybernetics-agent.tar.gz \
+              https://github.com/${{ github.repository }}/releases/download/${{ steps.validate.outputs.tag }}/${{ steps.build.outputs.artifact }}
+            tar xzf cybernetics-agent.tar.gz
+            cd cybernetics-agent-${{ steps.validate.outputs.version }}
+            ./setup-cybernetics.sh
+            ```
+
+            Verify checksum:
+
+            ```bash
+            curl -L https://github.com/${{ github.repository }}/releases/download/${{ steps.validate.outputs.tag }}/${{ steps.build.outputs.checksum }} \
+              | sha256sum -c
+            ```

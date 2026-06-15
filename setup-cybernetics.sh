@@ -6,7 +6,7 @@
 # Uses uv for desktop/server setup and Python's stdlib venv + pip on Termux.
 #
 # Usage:
-#   ./setup-hermes.sh
+#   ./setup-cybernetics.sh
 #
 # This script:
 # 1. Detects desktop/server vs Android/Termux setup path
@@ -464,8 +464,6 @@ echo "  cybernetics cron list     # View scheduled jobs"
 echo "  cybernetics doctor        # Diagnose issues"
 echo ""
 echo "(Legacy 'hermes' command still works as an alias.)"
-echo "  cybernetics cron list     # View scheduled jobs"
-echo "  cybernetics doctor        # Diagnose issues"
 echo ""
 
 # Ask if they want to run setup wizard now

@@ -16,7 +16,7 @@
 set -e
 
 # Guard against environment leakage when the installer is launched from another
-# Python-driven tool session (e.g. Hermes terminal tool). A pre-set PYTHONPATH
+# Python-driven tool session (e.g. Cybernetics terminal tool). A pre-set PYTHONPATH
 # can force pip/entrypoints to import a different checkout than the one being
 # installed, which makes fresh installs appear broken or stale.
 if [ -n "${PYTHONPATH:-}" ]; then
@@ -62,8 +62,8 @@ PYTHON_VERSION="3.11"
 NODE_VERSION="22"
 
 # FHS-style root install layout (set by resolve_install_layout when applicable):
-#   code at /usr/local/lib/hermes-agent, command at /usr/local/bin/hermes,
-#   data still at /root/.hermes (HERMES_HOME).  Matches Claude Code / Codex CLI
+#   code at /usr/local/lib/cybernetics-agent, command at /usr/local/bin/cybernetics,
+#   data still at /root/.cybernetics (HERMES_HOME).  Matches Claude Code / Codex CLI
 #   and keeps Docker bind-mounted /root/ volumes lean.
 ROOT_FHS_LAYOUT=false
 DETECTED_BROWSER_EXECUTABLE=""
@@ -245,7 +245,7 @@ json_escape() {
 
 # npm rewrites tracked package-lock.json files non-deterministically during
 # `npm install` / `npm run pack`. On a managed install those diffs are never
-# intentional, but they leave the checkout dirty — which forces `hermes update`
+# intentional, but they leave the checkout dirty — which forces `cybernetics update`
 # to autostash on every run and makes branch switches fragile. Restore them so
 # a fresh install ends with a clean tree. Best-effort; only touches lockfiles.
 restore_dirty_lockfiles() {
@@ -338,18 +338,20 @@ is_termux() {
     [ -n "${TERMUX_VERSION:-}" ] || [[ "${PREFIX:-}" == *"com.termux/files/usr"* ]]
 }
 
-# Decide where the repo checkout + venv live, and where the `hermes` command
-# symlink goes.  Called after detect_os so $OS/$DISTRO are known.
+# Decide where the repo checkout + venv live, and where the `cybernetics`
+# command symlink goes.  Called after detect_os so $OS/$DISTRO are known.
 #
 # Defaults:
-#   - Non-root, any OS:       INSTALL_DIR = $HERMES_HOME/hermes-agent
+#   - Non-root, any OS:       INSTALL_DIR = $HERMES_HOME/cybernetics-agent
 #                             command link in $HOME/.local/bin
-#   - Termux (any uid):       INSTALL_DIR = $HERMES_HOME/hermes-agent
+#   - Termux (any uid):       INSTALL_DIR = $HERMES_HOME/cybernetics-agent
 #                             command link in $PREFIX/bin (already on PATH)
-#   - Root on Linux (new):    INSTALL_DIR = /usr/local/lib/hermes-agent
+#   - Root on Linux (new):    INSTALL_DIR = /usr/local/lib/cybernetics-agent
 #                             command link in /usr/local/bin
-#                             (unless a legacy install already exists at
-#                              $HERMES_HOME/hermes-agent — then preserve it)
+#
+# Legacy layouts under $HERMES_HOME/hermes-agent (and
+# /usr/local/lib/hermes-agent for root) are auto-detected and reused in place
+# so existing installs keep updating against their own checkout.
 #
 # Always no-op when the user set --dir or $HERMES_INSTALL_DIR.
 resolve_install_layout() {
@@ -360,7 +362,12 @@ resolve_install_layout() {
 
     # Termux: package manager manages /data/data/..., keep code in HERMES_HOME.
     if is_termux; then
-        INSTALL_DIR="$HERMES_HOME/hermes-agent"
+        if [ -d "$HERMES_HOME/hermes-agent/.git" ] && [ ! -d "$HERMES_HOME/cybernetics-agent/.git" ]; then
+            INSTALL_DIR="$HERMES_HOME/hermes-agent"
+            log_info "Existing install detected at $INSTALL_DIR — keeping legacy layout"
+        else
+            INSTALL_DIR="$HERMES_HOME/cybernetics-agent"
+        fi
         return 0
     fi
 
@@ -368,19 +375,33 @@ resolve_install_layout() {
     # macOS root installs keep the legacy layout because /usr/local/ on macOS
     # is Homebrew territory and we don't want to fight that.
     if [ "$OS" = "linux" ] && [ "$(id -u)" -eq 0 ]; then
-        if [ -d "$HERMES_HOME/hermes-agent/.git" ]; then
-            INSTALL_DIR="$HERMES_HOME/hermes-agent"
-            log_info "Existing install detected at $INSTALL_DIR — keeping legacy layout"
-            log_info "  (new root installs use /usr/local/lib/hermes-agent)"
+        # Existing FHS install at the legacy hermes-agent path: keep it.
+        if [ -d "/usr/local/lib/hermes-agent/.git" ] && [ ! -d "/usr/local/lib/cybernetics-agent/.git" ]; then
+            INSTALL_DIR="/usr/local/lib/hermes-agent"
+            ROOT_FHS_LAYOUT=true
+            log_info "Existing FHS install detected at $INSTALL_DIR — keeping legacy layout"
+            export UV_PYTHON_INSTALL_DIR="${UV_PYTHON_INSTALL_DIR:-/usr/local/share/uv/python}"
+            export UV_PYTHON_BIN_DIR="${UV_PYTHON_BIN_DIR:-/usr/local/share/uv/bin}"
             return 0
         fi
-        INSTALL_DIR="/usr/local/lib/hermes-agent"
+        # Existing pre-FHS install under HERMES_HOME: preserve it (don't migrate).
+        if [ -d "$HERMES_HOME/hermes-agent/.git" ] || [ -d "$HERMES_HOME/cybernetics-agent/.git" ]; then
+            if [ -d "$HERMES_HOME/cybernetics-agent/.git" ]; then
+                INSTALL_DIR="$HERMES_HOME/cybernetics-agent"
+            else
+                INSTALL_DIR="$HERMES_HOME/hermes-agent"
+            fi
+            log_info "Existing install detected at $INSTALL_DIR — keeping legacy layout"
+            log_info "  (new root installs use /usr/local/lib/cybernetics-agent)"
+            return 0
+        fi
+        INSTALL_DIR="/usr/local/lib/cybernetics-agent"
         ROOT_FHS_LAYOUT=true
         # Place uv-managed Python under /usr/local/share so the venv interpreter
         # is world-readable.  Default uv paths land in /root/.local/share/uv,
         # which non-root users can't traverse — leaving the shared
-        # /usr/local/bin/hermes wrapper unable to exec the bad-interpreter venv
-        # python.  See #21457.
+        # /usr/local/bin/cybernetics wrapper unable to exec the bad-interpreter
+        # venv python.  See #21457.
         export UV_PYTHON_INSTALL_DIR="${UV_PYTHON_INSTALL_DIR:-/usr/local/share/uv/python}"
         export UV_PYTHON_BIN_DIR="${UV_PYTHON_BIN_DIR:-/usr/local/share/uv/bin}"
         log_info "Root install on Linux — using FHS layout"
@@ -391,8 +412,13 @@ resolve_install_layout() {
         return 0
     fi
 
-    # Default: non-root, non-Termux → legacy user-scoped layout.
-    INSTALL_DIR="$HERMES_HOME/cybernetics-agent"
+    # Default: non-root, non-Termux. Detect legacy layout, else use new default.
+    if [ -d "$HERMES_HOME/hermes-agent/.git" ] && [ ! -d "$HERMES_HOME/cybernetics-agent/.git" ]; then
+        INSTALL_DIR="$HERMES_HOME/hermes-agent"
+        log_info "Existing install detected at $INSTALL_DIR — keeping legacy layout"
+    else
+        INSTALL_DIR="$HERMES_HOME/cybernetics-agent"
+    fi
 }
 
 get_command_link_dir() {
@@ -415,7 +441,7 @@ get_command_link_display_dir() {
     fi
 }
 
-get_hermes_command_path() {
+get_cybernetics_command_path() {
     local link_dir
     link_dir="$(get_command_link_dir)"
     # Prefer the cybernetics symlink, fall back to legacy hermes for older installs.
@@ -480,7 +506,7 @@ install_uv() {
         return 0
     fi
 
-    # Hermes owns its own uv at $HERMES_HOME/bin/uv.  Always install there —
+    # Cybernetics owns its own uv at $HERMES_HOME/bin/uv.  Always install there —
     # no PATH probing, no conda guards, no multi-location resolution chains.
     # The runtime update path (hermes_cli/managed_uv.py) looks in the same
     # place, so install.sh and `hermes update` stay in sync.
@@ -711,8 +737,8 @@ check_git() {
 # `^20.19 || >=22.12` — older Node lacks `node:util.styleText`, so `vite build`
 # crashes with a SyntaxError that surfaces only as the opaque "Build desktop
 # app … exit code 1" install failure. Returns 0 when the given `node --version`
-# string clears that floor; anything below it is replaced with the Hermes-
-# managed Node $NODE_VERSION LTS.
+# string clears that floor; anything below it is replaced with the
+# Cybernetics-managed Node $NODE_VERSION LTS.
 node_satisfies_build() {
     local ver="${1#v}"
     local major="${ver%%.*}"
@@ -733,16 +759,16 @@ check_node() {
         return 0
     fi
 
-    # Prefer a Hermes-managed Node from a previous run over a too-old system one.
+    # Prefer a Cybernetics-managed Node from a previous run over a too-old system one.
     if [ -x "$HERMES_HOME/node/bin/node" ] && node_satisfies_build "$("$HERMES_HOME/node/bin/node" --version)"; then
         export PATH="$HERMES_HOME/node/bin:$PATH"
-        log_success "Node.js $("$HERMES_HOME/node/bin/node" --version) found (Hermes-managed)"
+        log_success "Node.js $("$HERMES_HOME/node/bin/node" --version) found (Cybernetics-managed)"
         HAS_NODE=true
         return 0
     fi
 
     if command -v node &> /dev/null; then
-        log_warn "Node.js $(node --version) is too old for the desktop build (need ^20.19 or >=22.12) — installing Hermes-managed Node $NODE_VERSION LTS..."
+        log_warn "Node.js $(node --version) is too old for the desktop build (need ^20.19 or >=22.12) — installing Cybernetics-managed Node $NODE_VERSION LTS..."
     elif [ "$DISTRO" = "termux" ]; then
         log_info "Node.js not found — installing Node.js via pkg..."
     else
@@ -894,7 +920,7 @@ check_network_prerequisites() {
         log_info "If mirrors are stale: termux-change-repo"
         log_info "Then test: curl -I https://pypi.org/simple/ && curl -I https://duckduckgo.com/"
     else
-        log_warn "Network checks failed. Hermes install may complete, but web search and dependency downloads can fail."
+        log_warn "Network checks failed. Cybernetics install may complete, but web search and dependency downloads can fail."
         log_info "Verify internet/DNS and retry if pip install fails."
     fi
 }
@@ -1151,7 +1177,7 @@ clone_repo() {
                     if git stash apply "$autostash_ref"; then
                         git stash drop "$autostash_ref" >/dev/null
                         log_warn "Local changes were restored on top of the updated codebase."
-                        log_warn "Review git diff / git status if Hermes behaves unexpectedly."
+                        log_warn "Review git diff / git status if Cybernetics behaves unexpectedly."
                     else
                         log_error "Update succeeded, but restoring local changes failed. Your changes are still preserved in git stash."
                         log_info "Resolve manually with: git stash apply $autostash_ref"
@@ -1874,7 +1900,7 @@ install_node_deps() {
         DETECTED_BROWSER_EXECUTABLE="$(find_system_browser 2>/dev/null || true)"
         if [ -n "$DETECTED_BROWSER_EXECUTABLE" ]; then
             log_success "Found system Chrome/Chromium at $DETECTED_BROWSER_EXECUTABLE"
-            log_info "Skipping Playwright browser download; Hermes will use the system browser."
+            log_info "Skipping Playwright browser download; Cybernetics will use the system browser."
         else
             case "$DISTRO" in
                 ubuntu|debian|raspbian|pop|linuxmint|elementary|zorin|kali|parrot)
@@ -2020,7 +2046,7 @@ maybe_start_gateway() {
 
     echo ""
     log_info "Messaging platform token detected!"
-    log_info "The gateway needs to be running for Hermes to send/receive messages."
+    log_info "The gateway needs to be running for Cybernetics to send/receive messages."
 
     # If WhatsApp is enabled and no session exists yet, run foreground first for QR scan
     WHATSAPP_VAL=$(grep "^WHATSAPP_ENABLED=" "$ENV_FILE" 2>/dev/null | cut -d'=' -f2-)
@@ -2032,7 +2058,7 @@ maybe_start_gateway() {
             log_info "Running 'hermes whatsapp' to pair via QR code..."
             echo ""
             if prompt_yes_no "Pair WhatsApp now?" "yes"; then
-                HERMES_CMD="$(get_hermes_command_path)"
+                HERMES_CMD="$(get_cybernetics_command_path)"
                 $HERMES_CMD whatsapp || true
             fi
         else
@@ -2061,7 +2087,7 @@ maybe_start_gateway() {
     fi
 
     if [ "$should_install_gateway" = true ]; then
-        HERMES_CMD="$(get_hermes_command_path)"
+        HERMES_CMD="$(get_cybernetics_command_path)"
 
         if [ "$DISTRO" != "termux" ] && command -v systemctl &> /dev/null; then
             log_info "Installing systemd service..."
@@ -2285,7 +2311,7 @@ postinstall_mode() {
     print_banner
     detect_os
 
-    log_info "Post-install mode: setting up Hermes for pip install"
+    log_info "Post-install mode: setting up Cybernetics for pip install"
 
     check_node
     check_network_prerequisites
@@ -2407,7 +2433,7 @@ install_desktop() {
     # with no app and a confusing "couldn't find a built desktop" at launch.
     # Always re-resolve Node here. Stages run in separate processes, so we can't
     # trust an earlier check; more importantly check_node now enforces the build
-    # floor (^20.19 || >=22.12) and prepends the Hermes-managed Node to PATH, so
+    # floor (^20.19 || >=22.12) and prepends the Cybernetics-managed Node to PATH, so
     # the build never runs on a too-old system Node — the cause of the opaque
     # "Build desktop app … exit code 1" failure (Vite crashes on old Node).
     check_node
@@ -2649,7 +2675,7 @@ run_stage_body() {
             detect_os
             resolve_install_layout
             require_install_dir
-            # Each stage runs in its own process, so the Hermes-managed Node
+            # Each stage runs in its own process, so the Cybernetics-managed Node
             # provisioned during prerequisites/node-deps (at $HERMES_HOME/node/bin)
             # isn't on PATH here. check_node re-adds it (or installs if missing)
             # so install_desktop can find npm instead of silently skipping.

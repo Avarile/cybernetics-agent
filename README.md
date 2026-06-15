@@ -20,14 +20,38 @@ Use any model you want — [OpenRouter](https://openrouter.ai) (200+ models), [N
 
 ### Linux, macOS, WSL2 — one-liner
 
+Latest from `main`:
+
 ```bash
 curl -fsSL https://raw.githubusercontent.com/Avarile/cybernetics-agent/main/scripts/install.sh | bash
+```
+
+Pin to a specific release (recommended for servers):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Avarile/cybernetics-agent/main/scripts/install.sh \
+  | bash -s -- --branch v0.1.0
 ```
 
 ### Windows (PowerShell) — one-liner
 
 ```powershell
 iex (irm https://raw.githubusercontent.com/Avarile/cybernetics-agent/main/scripts/install.ps1)
+```
+
+### Release tarball (no git required)
+
+Each tagged release also ships a source tarball with a SHA256 checksum. Useful in container images or air-gapped boxes where you don't want a full clone:
+
+```bash
+VERSION=0.1.0
+curl -L -o cybernetics-agent.tar.gz \
+  "https://github.com/Avarile/cybernetics-agent/releases/download/v${VERSION}/cybernetics-agent-${VERSION}.tar.gz"
+curl -L "https://github.com/Avarile/cybernetics-agent/releases/download/v${VERSION}/cybernetics-agent-${VERSION}.tar.gz.sha256" \
+  | sha256sum -c
+tar xzf cybernetics-agent.tar.gz
+cd "cybernetics-agent-${VERSION}"
+./setup-cybernetics.sh
 ```
 
 ### Manual / dev install (git clone)
@@ -38,7 +62,7 @@ cd cybernetics-agent
 ./setup-cybernetics.sh
 ```
 
-Either path installs `uv`, creates a `.venv` with Python 3.11, installs the project with extras, and symlinks `~/.local/bin/cybernetics` (with `hermes` as a legacy alias) so the command is on your `PATH`.
+Every path installs `uv`, creates a `.venv` with Python 3.11, installs the project with extras, and symlinks `~/.local/bin/cybernetics` (with `hermes` as a legacy alias) so the command is on your `PATH`.
 
 After installation:
 
