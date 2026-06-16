@@ -1,22 +1,22 @@
-# Hermes Achievements
+# Cybernetics Achievements
 
-> **Bundled with Hermes Agent.** Originally authored by [@PCinkusz](https://github.com/PCinkusz) at https://github.com/PCinkusz/hermes-achievements — vendored into `plugins/hermes-achievements/` so it ships with the dashboard out-of-the-box and stays in lockstep with Hermes feature changes. Upstream repo remains the staging ground for new badges and UI iteration.
+> **Bundled with Hermes Agent.** Originally authored by [@PCinkusz](https://github.com/PCinkusz) at https://github.com/PCinkusz/hermes-achievements — vendored into `plugins/cybernetics-achievements/` so it ships with the dashboard out-of-the-box and stays in lockstep with Hermes feature changes. Upstream repo remains the staging ground for new badges and UI iteration.
 >
-> When Hermes is installed via `pip install hermes-agent` or cloned from source, this plugin auto-registers as a dashboard tab on first `hermes dashboard` launch. No separate install step. See [Built-in Plugins → hermes-achievements](../../website/docs/user-guide/features/built-in-plugins.md) in the main docs.
+> When Hermes is installed via `pip install cybernetics-agent` or cloned from source, this plugin auto-registers as a dashboard tab on first `hermes dashboard` launch. No separate install step. See [Built-in Plugins → cybernetics-achievements](../../website/docs/user-guide/features/built-in-plugins.md) in the main docs.
 
-Achievement system for the Hermes Dashboard: collectible, tiered badges generated from real local Hermes session history.
+Achievement system for the Hermes Dashboard: collectible, tiered badges generated from real local Cybernetics session history.
 
-![Hermes Achievements dashboard](docs/assets/achievements-dashboard-hd.png)
+![Cybernetics Achievements dashboard](docs/assets/achievements-dashboard-hd.png)
 
 The screenshots use temporary demo tier data to show the full visual range. The plugin itself reads real local Hermes session history by default.
 
 > **Update notice (2026-04-29):** If you installed this plugin before today, update to the latest version. The achievements scan path was refactored for much faster warm loads (snapshot cache + incremental checkpoint scan).
 >
-> **Share cards (2026-05-04, vendored in hermes-agent v0.4.0):** Unlocked achievement cards now have a "Share" button that renders a 1200×630 PNG share card (client-side canvas, no backend, no network) with Download + Copy-to-clipboard actions. Fits X/Twitter, Discord, LinkedIn, Bluesky link-preview dimensions.
+> **Share cards (2026-05-04, vendored in cybernetics-agent v0.4.0):** Unlocked achievement cards now have a "Share" button that renders a 1200×630 PNG share card (client-side canvas, no backend, no network) with Download + Copy-to-clipboard actions. Fits X/Twitter, Discord, LinkedIn, Bluesky link-preview dimensions.
 
 ## What it does
 
-Hermes Achievements scans local Hermes sessions and unlocks badges based on real agent behavior:
+Cybernetics Achievements scans local Hermes sessions and unlocks badges based on real agent behavior:
 
 - autonomous tool chains
 - debugging and recovery patterns
@@ -61,14 +61,14 @@ Version `0.2.x` expands the catalog to 60+ achievements, including model/provide
 Clone into your Hermes plugins directory:
 
 ```bash
-git clone https://github.com/PCinkusz/hermes-achievements ~/.hermes/plugins/hermes-achievements
+git clone https://github.com/PCinkusz/hermes-achievements ~/.hermes/plugins/cybernetics-achievements
 ```
 
 For local development, keep the repo elsewhere and symlink it:
 
 ```bash
 git clone https://github.com/PCinkusz/hermes-achievements ~/hermes-achievements
-ln -s ~/hermes-achievements ~/.hermes/plugins/hermes-achievements
+ln -s ~/cybernetics-achievements ~/.hermes/plugins/cybernetics-achievements
 ```
 
 Then rescan dashboard plugins:
@@ -84,7 +84,7 @@ If backend API routes 404, restart `hermes dashboard`; plugin APIs are mounted a
 If you installed with git:
 
 ```bash
-cd ~/.hermes/plugins/hermes-achievements
+cd ~/.hermes/plugins/cybernetics-achievements
 git pull --ff-only
 curl http://127.0.0.1:9119/api/dashboard/plugins/rescan
 ```
@@ -121,7 +121,7 @@ dashboard/
 Routes are mounted under:
 
 ```text
-/api/plugins/hermes-achievements/
+/api/plugins/cybernetics-achievements/
 ```
 
 Endpoints:

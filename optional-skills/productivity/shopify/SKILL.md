@@ -21,7 +21,7 @@ required_environment_variables:
 metadata:
   hermes:
     tags: [Shopify, E-commerce, Commerce, API, GraphQL]
-    related_skills: [airtable, xurl]
+    related_skills: [xurl]
     homepage: https://shopify.dev/docs/api/admin-graphql
 ---
 

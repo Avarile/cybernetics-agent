@@ -1,6 +1,6 @@
-"""Hermes Achievements dashboard plugin backend.
+"""Cybernetics Achievements dashboard plugin backend.
 
-Mounted at /api/plugins/hermes-achievements/ by Hermes dashboard.
+Mounted at /api/plugins/cybernetics-achievements/ by Hermes dashboard.
 """
 from __future__ import annotations
 
@@ -143,15 +143,15 @@ ACHIEVEMENTS: List[Dict[str, Any]] = [
 
 
 def state_path() -> Path:
-    return get_hermes_home() / "plugins" / "hermes-achievements" / "state.json"
+    return get_hermes_home() / "plugins" / "cybernetics-achievements" / "state.json"
 
 
 def snapshot_path() -> Path:
-    return get_hermes_home() / "plugins" / "hermes-achievements" / "scan_snapshot.json"
+    return get_hermes_home() / "plugins" / "cybernetics-achievements" / "scan_snapshot.json"
 
 
 def checkpoint_path() -> Path:
-    return get_hermes_home() / "plugins" / "hermes-achievements" / "scan_checkpoint.json"
+    return get_hermes_home() / "plugins" / "cybernetics-achievements" / "scan_checkpoint.json"
 
 
 def load_state() -> Dict[str, Any]:
@@ -934,7 +934,7 @@ def _start_background_scan() -> None:
         thread = threading.Thread(
             target=_run_scan_and_update_cache,
             kwargs={"publish_partial_snapshots": True},
-            name="hermes-achievements-scan",
+            name="cybernetics-achievements-scan",
             daemon=True,
         )
         _BACKGROUND_SCAN_THREAD = thread

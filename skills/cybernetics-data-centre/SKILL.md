@@ -1,5 +1,5 @@
 ---
-name: knowledge
+name: cybernetics-data-centre
 description: >
   The user's personal knowledge base. ALWAYS search here FIRST whenever
   the user asks about a fact, decision, snippet, recipe, reference, or
