@@ -113,7 +113,7 @@ def _xai_user_agent() -> str:
 
         return hermes_xai_user_agent()
     except Exception:
-        return "hermes-agent/video_gen"
+        return "cybernetics-agent/video_gen"
 
 
 def _xai_headers(api_key: str) -> Dict[str, str]:
@@ -352,7 +352,7 @@ class XAIVideoGenProvider(VideoGenProvider):
         if not api_key:
             return error_response(
                 error=(
-                    "No xAI credentials found. Sign in via `hermes auth add xai-oauth` "
+                    "No xAI credentials found. Sign in via `cybernetics auth add xai-oauth` "
                     "(SuperGrok / Premium+) or set XAI_API_KEY from "
                     "https://console.x.ai/."
                 ),

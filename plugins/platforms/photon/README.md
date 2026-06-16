@@ -1,6 +1,6 @@
 # Photon iMessage platform plugin
 
-This plugin connects Hermes Agent to iMessage (and other Spectrum
+This plugin connects Cybernetics Agent to iMessage (and other Spectrum
 interfaces) through [Photon][photon] — a managed service that handles
 iMessage line allocation, delivery, and abuse-prevention so users don't
 have to run their own Mac relay.
@@ -13,7 +13,7 @@ recommend for everyone who doesn't already pay for a dedicated number.
 Like Discord and Slack, Photon is a **persistent-connection** channel — no
 public URL, no webhook, no signing secret. The `spectrum-ts` SDK holds a
 long-lived **gRPC stream** to Photon for both directions. Because the SDK is
-TypeScript-only, Hermes runs it inside a small supervised Node sidecar and
+TypeScript-only, Cybernetics runs it inside a small supervised Node sidecar and
 talks to it over loopback.
 
 ```
@@ -43,17 +43,17 @@ talks to it over loopback.
 
 ```bash
 # One-shot setup: device login (opens browser) + project + user + sidecar deps
-hermes photon setup --phone +15551234567
+cybernetics photon setup --phone +15551234567
 
 # Start the gateway
-hermes gateway start --platform photon
+cybernetics gateway start --platform photon
 ```
 
-`hermes photon setup` does, in order:
+`cybernetics photon setup` does, in order:
 
 1. **Device login** (RFC 8628, `client_id=photon-cli`) — opens
    `https://app.photon.codes/` for approval and stores the bearer token.
-2. **Find or create** the `Hermes Agent` project on the Photon dashboard.
+2. **Find or create** the `Cybernetics Agent` project on the Photon dashboard.
 3. **Enable Spectrum**, read the project's `spectrumProjectId`, rotate the
    project secret, and persist both.
 4. **Register your phone number** as a Spectrum user (idempotent — skipped if
@@ -64,14 +64,14 @@ hermes gateway start --platform photon
    verbatim, so every setup runs the exact `spectrum-ts` version this plugin
    was written against).
 
-There is no separate `login` command; like every other Hermes channel,
+There is no separate `login` command; like every other Cybernetics channel,
 onboarding goes through one setup surface. Re-running `setup` reuses an
 existing token/project, so it's safe to run again to finish a partial setup.
-Run `hermes photon status` to see what's configured.
+Run `cybernetics photon status` to see what's configured.
 
 ## Credentials
 
-Runtime SDK credentials live in `~/.hermes/.env` (the same place every other
+Runtime SDK credentials live in `~/.cybernetics/.env` (the same place every other
 channel keeps its token), and the adapter reads them from the environment:
 
 ```bash
@@ -79,7 +79,7 @@ PHOTON_PROJECT_ID=<spectrumProjectId>   # the SDK's projectId
 PHOTON_PROJECT_SECRET=<projectSecret>
 ```
 
-Management metadata lives in `~/.hermes/auth.json` under `credential_pool`:
+Management metadata lives in `~/.cybernetics/auth.json` under `credential_pool`:
 
 ```jsonc
 {
@@ -92,7 +92,7 @@ Management metadata lives in `~/.hermes/auth.json` under `credential_pool`:
         "dashboard_project_id": "<dashboard id>",
         "spectrum_project_id": "<spectrumProjectId>",
         "project_secret": "<projectSecret>",
-        "name": "Hermes Agent"
+        "name": "Cybernetics Agent"
       }
     ]
   }
@@ -119,7 +119,7 @@ All env vars are documented in `plugin.yaml`. The most important:
 | `PHOTON_ALLOWED_USERS`    | your number (set by setup) | Comma-separated E.164 allowlist      |
 | `PHOTON_REQUIRE_MENTION`  | false                      | Gate group chats on a wake word      |
 | `PHOTON_MAX_INLINE_ATTACHMENT_BYTES` | 20 MB           | Max inbound attachment size the sidecar reads & inlines |
-| `PHOTON_TELEMETRY`        | false                      | Spectrum SDK telemetry — toggle with `hermes photon telemetry on\|off` (restart the gateway to apply) |
+| `PHOTON_TELEMETRY`        | false                      | Spectrum SDK telemetry — toggle with `cybernetics photon telemetry on\|off` (restart the gateway to apply) |
 | `PHOTON_MARKDOWN`         | true                       | Send agent replies as markdown (iMessage renders natively). `false` strips formatting to plain text |
 | `PHOTON_REACTIONS`        | false                      | Tapback 👀/👍/👎 as processing status; tapbacks on bot messages reach the agent as `reaction:added:<emoji>` |
 
@@ -167,7 +167,7 @@ release take down fresh setups silently. Upgrades are deliberate:
    (`sidecar/node_modules/spectrum-ts/dist/*.d.ts` is the source of truth —
    the hosted docs can lag).
 4. Run `pytest tests/plugins/platforms/photon/`.
-5. Verify end-to-end: `hermes photon status`, a DM and a group roundtrip,
+5. Verify end-to-end: `cybernetics photon status`, a DM and a group roundtrip,
    and an agent reply into a group right after a gateway restart (exercises
    `space.get` rehydration).
 

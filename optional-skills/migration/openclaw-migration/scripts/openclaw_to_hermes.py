@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""OpenClaw -> Hermes migration helper.
+"""OpenClaw -> Cybernetics migration helper.
 
 This script migrates the parts of an OpenClaw user footprint that map cleanly
-into Hermes Agent, archives selected unmapped docs for manual review, and
+into Cybernetics Agent, archives selected unmapped docs for manual review, and
 reports exactly what was skipped and why.
 """
 
@@ -53,11 +53,11 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "memory": {
         "label": "MEMORY.md",
-        "description": "Import long-term memory entries into Hermes memories.",
+        "description": "Import long-term memory entries into Cybernetics memories.",
     },
     "user-profile": {
         "label": "USER.md",
-        "description": "Import user profile entries into Hermes memories.",
+        "description": "Import user profile entries into Cybernetics memories.",
     },
     "messaging-settings": {
         "label": "Messaging settings",
@@ -69,43 +69,43 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "command-allowlist": {
         "label": "Command allowlist",
-        "description": "Merge OpenClaw exec approval patterns into Hermes command_allowlist.",
+        "description": "Merge OpenClaw exec approval patterns into Cybernetics command_allowlist.",
     },
     "skills": {
         "label": "User skills",
-        "description": "Copy OpenClaw skills into ~/.hermes/skills/openclaw-imports/.",
+        "description": "Copy OpenClaw skills into ~/.cybernetics/skills/openclaw-imports/.",
     },
     "tts-assets": {
         "label": "TTS assets",
-        "description": "Copy compatible workspace TTS assets into ~/.hermes/tts/.",
+        "description": "Copy compatible workspace TTS assets into ~/.cybernetics/tts/.",
     },
     "discord-settings": {
         "label": "Discord settings",
-        "description": "Import Discord bot token and allowlist into Hermes .env.",
+        "description": "Import Discord bot token and allowlist into Cybernetics .env.",
     },
     "slack-settings": {
         "label": "Slack settings",
-        "description": "Import Slack bot/app tokens and allowlist into Hermes .env.",
+        "description": "Import Slack bot/app tokens and allowlist into Cybernetics .env.",
     },
     "whatsapp-settings": {
         "label": "WhatsApp settings",
-        "description": "Import WhatsApp allowlist into Hermes .env.",
+        "description": "Import WhatsApp allowlist into Cybernetics .env.",
     },
     "signal-settings": {
         "label": "Signal settings",
-        "description": "Import Signal account, HTTP URL, and allowlist into Hermes .env.",
+        "description": "Import Signal account, HTTP URL, and allowlist into Cybernetics .env.",
     },
     "provider-keys": {
         "label": "Provider API keys",
-        "description": "Import model provider API keys into Hermes .env (requires --migrate-secrets).",
+        "description": "Import model provider API keys into Cybernetics .env (requires --migrate-secrets).",
     },
     "model-config": {
         "label": "Default model",
-        "description": "Import the default model setting into Hermes config.yaml.",
+        "description": "Import the default model setting into Cybernetics config.yaml.",
     },
     "tts-config": {
         "label": "TTS configuration",
-        "description": "Import TTS provider and voice settings into Hermes config.yaml.",
+        "description": "Import TTS provider and voice settings into Cybernetics config.yaml.",
     },
     "shared-skills": {
         "label": "Shared skills",
@@ -113,7 +113,7 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "daily-memory": {
         "label": "Daily memory files",
-        "description": "Merge daily memory entries from workspace/memory/ into Hermes MEMORY.md.",
+        "description": "Merge daily memory entries from workspace/memory/ into Cybernetics MEMORY.md.",
     },
     "archive": {
         "label": "Archive unmapped docs",
@@ -121,7 +121,7 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "mcp-servers": {
         "label": "MCP servers",
-        "description": "Import MCP server definitions from OpenClaw into Hermes config.yaml.",
+        "description": "Import MCP server definitions from OpenClaw into Cybernetics config.yaml.",
     },
     "plugins-config": {
         "label": "Plugins configuration",
@@ -137,7 +137,7 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "agent-config": {
         "label": "Agent defaults and multi-agent setup",
-        "description": "Import agent defaults (compaction, context, thinking) into Hermes config. Archive multi-agent list.",
+        "description": "Import agent defaults (compaction, context, thinking) into Cybernetics config. Archive multi-agent list.",
     },
     "gateway-config": {
         "label": "Gateway configuration",
@@ -145,11 +145,11 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "session-config": {
         "label": "Session configuration",
-        "description": "Import session reset policies (daily/idle) into Hermes session_reset config.",
+        "description": "Import session reset policies (daily/idle) into Cybernetics session_reset config.",
     },
     "full-providers": {
         "label": "Full model provider definitions",
-        "description": "Import custom model providers (baseUrl, apiType, headers) into Hermes custom_providers.",
+        "description": "Import custom model providers (baseUrl, apiType, headers) into Cybernetics custom_providers.",
     },
     "deep-channels": {
         "label": "Deep channel configuration",
@@ -157,15 +157,15 @@ MIGRATION_OPTION_METADATA: Dict[str, Dict[str, str]] = {
     },
     "browser-config": {
         "label": "Browser configuration",
-        "description": "Import browser automation settings into Hermes config.yaml.",
+        "description": "Import browser automation settings into Cybernetics config.yaml.",
     },
     "tools-config": {
         "label": "Tools configuration",
-        "description": "Import tool settings (exec timeout, sandbox, web search) into Hermes config.yaml.",
+        "description": "Import tool settings (exec timeout, sandbox, web search) into Cybernetics config.yaml.",
     },
     "approvals-config": {
         "label": "Approval rules",
-        "description": "Import approval mode and rules into Hermes config.yaml approvals section.",
+        "description": "Import approval mode and rules into Cybernetics config.yaml approvals section.",
     },
     "memory-backend": {
         "label": "Memory backend configuration",
@@ -355,7 +355,7 @@ def load_yaml_file(path: Path) -> Dict[str, Any]:
 
 def dump_yaml_file(path: Path, data: Dict[str, Any]) -> None:
     if yaml is None:
-        raise RuntimeError("PyYAML is required to update Hermes config.yaml")
+        raise RuntimeError("PyYAML is required to update Cybernetics config.yaml")
     ensure_parent(path)
     path.write_text(
         yaml.safe_dump(data, sort_keys=False, allow_unicode=False),
@@ -396,13 +396,13 @@ def backup_existing(path: Path, backup_root: Path) -> Optional[Path]:
 
 
 # ── Brand rewriting ─────────────────────────────────────────
-# Replace OpenClaw brand names with Hermes in migrated text so that
+# Replace OpenClaw brand names with Cybernetics in migrated text so that
 # memory entries, user profiles, SOUL.md, and workspace instructions
 # read as self-referential to the new agent identity.
 #
 # Case-preserving: ``OpenClaw`` → ``Hermes`` (prose), but lowercase matches
 # like ``openclaw`` → ``hermes`` (so filesystem paths like ``~/.openclaw``
-# become ``~/.hermes`` — the real Hermes home — not the broken ``~/.Hermes``).
+# become ``~/.hermes`` — the real Cybernetics home — not the broken ``~/.Hermes``).
 _REBRAND_PATTERNS: List[Tuple[re.Pattern, str]] = [
     (re.compile(r'\bOpen[\s-]?Claw\b', re.IGNORECASE), 'Hermes'),
     (re.compile(r'\bClawdBot\b', re.IGNORECASE), 'Hermes'),
@@ -416,7 +416,7 @@ def _case_preserving_replacement(replacement: str):
 
     Keeps ``OpenClaw`` → ``Hermes`` but maps ``openclaw`` → ``hermes`` so a
     filesystem path like ``~/.openclaw/config.yaml`` rewrites to
-    ``~/.hermes/config.yaml`` (the real Hermes home) instead of the broken
+    ``~/.cybernetics/config.yaml`` (the real Cybernetics home) instead of the broken
     ``~/.Hermes/config.yaml``.
     """
     def _sub(match: "re.Match[str]") -> str:
@@ -668,7 +668,7 @@ def write_report(output_dir: Path, report: Dict[str, Any]) -> None:
         grouped.setdefault(item["status"], []).append(item)
 
     lines = [
-        "# OpenClaw -> Hermes Migration Report",
+        "# OpenClaw -> Cybernetics Migration Report",
         "",
         f"- Timestamp: {redacted['timestamp']}",
         f"- Mode: {redacted['mode']}",
@@ -781,7 +781,7 @@ class Migrator:
     def is_selected(self, option_id: str) -> bool:
         return option_id in self.selected_options
 
-    # Option ids that mutate the Hermes config.yaml file.  Once any one of
+    # Option ids that mutate the Cybernetics config.yaml file.  Once any one of
     # them records a conflict/error on config.yaml, subsequent ones are
     # short-circuited to avoid partial writes.  Keep in sync with methods
     # that call load_yaml_file(target_root / "config.yaml") + dump_yaml_file.
@@ -1083,7 +1083,7 @@ class Migrator:
                 else "Review the migration report."
             )
             steps.append(
-                "Start a new Hermes session (or /reset) to pick up the imported config."
+                "Start a new Cybernetics session (or /reset) to pick up the imported config."
             )
         if summary.get("conflict", 0) > 0:
             steps.append(
@@ -1737,7 +1737,7 @@ class Migrator:
 
         provider = tts.get("provider")
         if isinstance(provider, str) and provider in {"elevenlabs", "openai", "edge", "microsoft"}:
-            # OpenClaw renamed "edge" to "microsoft"; Hermes still uses "edge"
+            # OpenClaw renamed "edge" to "microsoft"; Cybernetics still uses "edge"
             tts_data["provider"] = "edge" if provider == "microsoft" else provider
 
         # TTS provider settings live under messages.tts.providers.{provider}
@@ -2059,12 +2059,12 @@ class Migrator:
         ]
         for candidate in candidates:
             if candidate:
-                self.archive_path(candidate, reason="No direct Hermes destination; archived for manual review")
+                self.archive_path(candidate, reason="No direct Cybernetics destination; archived for manual review")
 
         for rel in ("workspace/.learnings", "workspace/memory"):
             candidate = self.source_root / rel
             if candidate.exists():
-                self.archive_path(candidate, reason="No direct Hermes destination; archived for manual review")
+                self.archive_path(candidate, reason="No direct Cybernetics destination; archived for manual review")
 
         partially_extracted = [
             ("openclaw.json", "Selected Hermes-compatible values were extracted; raw OpenClaw config was not copied."),
@@ -2117,7 +2117,7 @@ class Migrator:
                 continue
             if name in existing_mcp and not self.overwrite:
                 self.record("mcp-servers", f"mcp.servers.{name}", f"mcp_servers.{name}", "conflict",
-                            "MCP server already exists in Hermes config")
+                            "MCP server already exists in Cybernetics config")
                 continue
 
             hermes_srv: Dict[str, Any] = {}
@@ -2302,7 +2302,7 @@ class Migrator:
             agent_cfg["verbose"] = defaults["verboseDefault"]
             changes = True
         if defaults.get("thinkingDefault"):
-            # Map OpenClaw thinking -> Hermes reasoning_effort
+            # Map OpenClaw thinking -> Cybernetics reasoning_effort
             thinking = defaults["thinkingDefault"]
             if thinking in {"always", "high", "xhigh"}:
                 agent_cfg["reasoning_effort"] = "high"
@@ -2373,7 +2373,7 @@ class Migrator:
                 self.maybe_backup(hermes_cfg_path)
                 dump_yaml_file(hermes_cfg_path, hermes_cfg)
             self.record("agent-config", "openclaw.json agents.defaults", "config.yaml agent/compression/terminal",
-                        "migrated", "Agent defaults mapped to Hermes config")
+                        "migrated", "Agent defaults mapped to Cybernetics config")
 
         # Archive multi-agent list
         if agent_list:
@@ -2603,7 +2603,7 @@ class Migrator:
                         continue
                     self._set_env_var(env_key, str(val), f"channels.{ch_name}.{oc_key}")
 
-        # Map Discord-specific settings to Hermes config
+        # Map Discord-specific settings to Cybernetics config
         discord_cfg = channels.get("discord") or {}
         if discord_cfg:
             hermes_cfg_path = self.target_root / "config.yaml"
@@ -2653,7 +2653,7 @@ class Migrator:
         browser_hermes = hermes_cfg.get("browser") or {}
         changed = False
 
-        # Map fields that have Hermes equivalents
+        # Map fields that have Cybernetics equivalents
         if browser.get("cdpUrl"):
             browser_hermes["cdp_url"] = browser["cdpUrl"]
             changed = True
@@ -2842,7 +2842,7 @@ class Migrator:
         if not self.output_dir:
             return
         notes = [
-            "# OpenClaw -> Hermes Migration Notes",
+            "# OpenClaw -> Cybernetics Migration Notes",
             "",
             "This document lists items that require manual attention after migration.",
             "",
@@ -2870,9 +2870,9 @@ class Migrator:
         conflicts = [i for i in self.items if i.status == "conflict"]
         if conflicts:
             notes.extend([
-                "## Conflicts (Existing Hermes Config Not Overwritten)",
+                "## Conflicts (Existing Cybernetics Config Not Overwritten)",
                 "",
-                "These items already existed in your Hermes config. Re-run with",
+                "These items already existed in your Cybernetics config. Re-run with",
                 "`--overwrite` to force, or merge manually:",
                 "",
             ])
@@ -2893,29 +2893,29 @@ class Migrator:
             "## IMPORTANT: Archive the OpenClaw Directory",
             "",
             "After migration, your OpenClaw directory still exists on disk with workspace",
-            "state files (todo.json, sessions, logs). If the Hermes agent discovers these",
-            "directories, it may read/write to them instead of the Hermes state, causing",
+            "state files (todo.json, sessions, logs). If the Cybernetics agent discovers these",
+            "directories, it may read/write to them instead of the Cybernetics state, causing",
             "confusion (e.g., cron jobs reading a different todo list than interactive sessions).",
             "",
-            "**Strongly recommended:** Run `hermes claw cleanup` to rename the OpenClaw",
+            "**Strongly recommended:** Run `cybernetics claw cleanup` to rename the OpenClaw",
             "directory to `.openclaw.pre-migration`. This prevents the agent from finding it.",
             "The directory is renamed, not deleted — you can undo this at any time.",
             "",
             "If you skip this step and notice the agent getting confused about workspaces",
-            "or todo lists, run `hermes claw cleanup` to fix it.",
+            "or todo lists, run `cybernetics claw cleanup` to fix it.",
             "",
             "## Hermes-Specific Setup",
             "",
             "After migration, you may want to:",
-            "- Run `hermes claw cleanup` to archive the OpenClaw directory (prevents state confusion)",
-            "- Run `hermes setup` to configure any remaining settings",
-            "- Run `hermes mcp list` to verify MCP servers were imported correctly",
+            "- Run `cybernetics claw cleanup` to archive the OpenClaw directory (prevents state confusion)",
+            "- Run `cybernetics setup` to configure any remaining settings",
+            "- Run `cybernetics mcp list` to verify MCP servers were imported correctly",
         ])
 
         if has_cron_config_archive:
-            notes.append("- Run `hermes cron` to recreate scheduled tasks (see archive/cron-config.json)")
+            notes.append("- Run `cybernetics cron` to recreate scheduled tasks (see archive/cron-config.json)")
         elif has_cron_store_archive:
-            notes.append("- Run `hermes cron` to recreate scheduled tasks (see archived cron-store)")
+            notes.append("- Run `cybernetics cron` to recreate scheduled tasks (see archived cron-store)")
 
         # Check if skills were imported
         has_skills = any(i.kind == "skills" and i.status == "migrated" for i in self.items)
@@ -2945,8 +2945,8 @@ class Migrator:
             ])
 
         notes.extend([
-            "- Run `hermes gateway install` if you need the gateway service",
-            "- Review `~/.hermes/config.yaml` for any adjustments",
+            "- Run `cybernetics gateway install` if you need the gateway service",
+            "- Review `~/.cybernetics/config.yaml` for any adjustments",
             "",
         ])
 
@@ -2958,7 +2958,7 @@ class Migrator:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Migrate OpenClaw user state into Hermes Agent.")
+    parser = argparse.ArgumentParser(description="Migrate OpenClaw user state into Cybernetics Agent.")
     parser.add_argument("--source", default=str(Path.home() / ".openclaw"), help="OpenClaw home directory")
     parser.add_argument("--target", default=os.environ.get("HERMES_HOME") or str(Path.home() / ".hermes"), help="Hermes home directory")
     parser.add_argument(
@@ -2966,7 +2966,7 @@ def parse_args() -> argparse.Namespace:
         help="Optional workspace root where the workspace instructions file should be copied",
     )
     parser.add_argument("--execute", action="store_true", help="Apply changes instead of reporting a dry run")
-    parser.add_argument("--overwrite", action="store_true", help="Overwrite existing Hermes targets after backing them up")
+    parser.add_argument("--overwrite", action="store_true", help="Overwrite existing Cybernetics targets after backing them up")
     parser.add_argument(
         "--migrate-secrets",
         action="store_true",
@@ -3044,7 +3044,7 @@ def main() -> int:
 
     print()
     print(f"  ╔══════════════════════════════════════════════════════╗")
-    print(f"  ║   OpenClaw -> Hermes Migration   [{mode_label:>8s}]   ║")
+    print(f"  ║   OpenClaw -> Cybernetics Migration   [{mode_label:>8s}]   ║")
     print(f"  ╠══════════════════════════════════════════════════════╣")
     print(f"  ║  Source:  {str(report['source_root'])[:42]:<42s}  ║")
     print(f"  ║  Target:  {str(report['target_root'])[:42]:<42s}  ║")
@@ -3067,7 +3067,7 @@ def main() -> int:
             seen_kinds.add(label)
             dest = item.get("destination") or ""
             if dest.startswith(str(report["target_root"])):
-                dest = "~/.hermes/" + dest[len(str(report["target_root"])) + 1:]
+                dest = "~/.cybernetics/" + dest[len(str(report["target_root"])) + 1:]
             meta = MIGRATION_OPTION_METADATA.get(label, {})
             display = meta.get("label", label)
             print(f"    ✔ {display:<35s} -> {dest}")
@@ -3113,7 +3113,7 @@ def main() -> int:
     if args.execute:
         print()
         print("  Next steps:")
-        print("    1. Review ~/.hermes/config.yaml")
+        print("    1. Review ~/.cybernetics/config.yaml")
         print("    2. Run: hermes mcp list")
         if any(i["kind"] == "cron-jobs" and i["status"] == "archived" for i in items):
             print("    3. Recreate cron jobs: hermes cron")

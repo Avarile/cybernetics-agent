@@ -1,1 +1,1 @@
-# Hermes plugins package
+# Cybernetics plugins package

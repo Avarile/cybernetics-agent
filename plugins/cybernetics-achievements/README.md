@@ -1,8 +1,8 @@
 # Cybernetics Achievements
 
-> **Bundled with Hermes Agent.** Originally authored by [@PCinkusz](https://github.com/PCinkusz) at https://github.com/PCinkusz/hermes-achievements — vendored into `plugins/cybernetics-achievements/` so it ships with the dashboard out-of-the-box and stays in lockstep with Hermes feature changes. Upstream repo remains the staging ground for new badges and UI iteration.
+> **Bundled with Cybernetics Agent.** Originally authored by [@PCinkusz](https://github.com/PCinkusz) at https://github.com/PCinkusz/hermes-achievements — vendored into `plugins/cybernetics-achievements/` so it ships with the dashboard out-of-the-box and stays in lockstep with Cybernetics feature changes. Upstream repo remains the staging ground for new badges and UI iteration.
 >
-> When Cybernetics Agent is installed via `pip install cybernetics-agent` or cloned from source, this plugin auto-registers as a dashboard tab on first `hermes dashboard` launch. No separate install step. See [Built-in Plugins → cybernetics-achievements](../../website/docs/user-guide/features/built-in-plugins.md) in the main docs.
+> When Cybernetics Agent is installed via `pip install cybernetics-agent` or cloned from source, this plugin auto-registers as a dashboard tab on first `cybernetics dashboard` launch. No separate install step. See [Built-in Plugins → cybernetics-achievements](../../website/docs/user-guide/features/built-in-plugins.md) in the main docs.
 
 Achievement system for the Cybernetics Dashboard: collectible, tiered badges generated from real local Cybernetics session history.
 
@@ -61,14 +61,14 @@ Version `0.2.x` expands the catalog to 60+ achievements, including model/provide
 Clone into your Cybernetics Agent plugins directory:
 
 ```bash
-git clone https://github.com/PCinkusz/hermes-achievements ~/.hermes/plugins/cybernetics-achievements
+git clone https://github.com/PCinkusz/hermes-achievements ~/.cybernetics/plugins/cybernetics-achievements
 ```
 
 For local development, keep the repo elsewhere and symlink it:
 
 ```bash
-git clone https://github.com/PCinkusz/hermes-achievements ~/hermes-achievements
-ln -s ~/cybernetics-achievements ~/.hermes/plugins/cybernetics-achievements
+git clone https://github.com/PCinkusz/hermes-achievements ~/cybernetics-achievements
+ln -s ~/cybernetics-achievements ~/.cybernetics/plugins/cybernetics-achievements
 ```
 
 Then rescan dashboard plugins:
@@ -77,19 +77,19 @@ Then rescan dashboard plugins:
 curl http://127.0.0.1:9119/api/dashboard/plugins/rescan
 ```
 
-If backend API routes 404, restart `hermes dashboard`; plugin APIs are mounted at dashboard startup.
+If backend API routes 404, restart `cybernetics dashboard`; plugin APIs are mounted at dashboard startup.
 
 ## Updating
 
 If you installed with git:
 
 ```bash
-cd ~/.hermes/plugins/cybernetics-achievements
+cd ~/.cybernetics/plugins/cybernetics-achievements
 git pull --ff-only
 curl http://127.0.0.1:9119/api/dashboard/plugins/rescan
 ```
 
-If the update changes backend routes or `plugin_api.py`, restart `hermes dashboard` after pulling.
+If the update changes backend routes or `plugin_api.py`, restart `cybernetics dashboard` after pulling.
 
 As of 2026-04-29, updating is strongly recommended because scan performance changed significantly:
 - removed duplicate `/overview` scan path

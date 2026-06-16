@@ -26,7 +26,7 @@ For the ``/events`` WebSocket we still require the session token as a
 header on an upgrade request), matching the established pattern used by
 the in-browser PTY bridge in ``hermes_cli/web_server.py``.
 
-This means ``hermes dashboard --host 0.0.0.0`` is safe to run on a LAN:
+This means ``cybernetics dashboard --host 0.0.0.0`` is safe to run on a LAN:
 plugin routes are no longer an unauthenticated exception. The auth still
 isn't multi-user — anyone who can read the printed URL+token gets full
 dashboard access — but they can't ride along just because they can reach
@@ -812,7 +812,7 @@ class UpdateTaskBody(BaseModel):
     result: Optional[str] = None
     block_reason: Optional[str] = None
     # Structured handoff fields — forwarded to complete_task when status
-    # transitions to 'done'. Dashboard parity with ``hermes kanban
+    # transitions to 'done'. Dashboard parity with ``cybernetics kanban
     # complete --summary ... --metadata ...``.
     summary: Optional[str] = None
     metadata: Optional[dict] = None
@@ -1275,7 +1275,7 @@ def list_diagnostics(
 
     Severity-filterable so the UI can render "just the critical ones"
     or the CLI can grep. Useful for the board-header attention strip
-    AND for ``hermes kanban diagnostics`` which shells to this
+    AND for ``cybernetics kanban diagnostics`` which shells to this
     endpoint when the dashboard's running, or invokes the engine
     directly when it isn't.
     """
@@ -1571,7 +1571,7 @@ def reclaim_task_endpoint(
     Used by the dashboard recovery popover when an operator wants to
     abort a stuck worker (e.g. one that keeps hallucinating card ids)
     without waiting for the claim TTL. Maps 1:1 to
-    ``hermes kanban reclaim <task_id> --reason ...``.
+    ``cybernetics kanban reclaim <task_id> --reason ...``.
     """
     board = _resolve_board(board)
     conn = _conn(board=board)
@@ -1605,7 +1605,7 @@ def specify_task_endpoint(
     board: Optional[str] = Query(None),
 ):
     """Flesh out a triage-column task via the auxiliary LLM and promote
-    it to ``todo``. Maps 1:1 to ``hermes kanban specify <task_id>``.
+    it to ``todo``. Maps 1:1 to ``cybernetics kanban specify <task_id>``.
 
     Returns the outcome shape used by the CLI: ``{ok, task_id, reason,
     new_title}``. A non-OK outcome is NOT an HTTP error — the UI renders
@@ -1659,7 +1659,7 @@ def reassign_task_endpoint(
     Used by the dashboard recovery popover when an operator wants to
     retry a task with a different worker profile (e.g. switch to a
     smarter model after the assigned profile keeps hallucinating).
-    Maps 1:1 to ``hermes kanban reassign <task_id> <profile> [--reclaim]``.
+    Maps 1:1 to ``cybernetics kanban reassign <task_id> <profile> [--reclaim]``.
     """
     board = _resolve_board(board)
     conn = _conn(board=board)
@@ -1689,7 +1689,7 @@ def reassign_task_endpoint(
 
 @router.get("/config")
 def get_config():
-    """Return kanban dashboard preferences from ~/.hermes/config.yaml.
+    """Return kanban dashboard preferences from ~/.cybernetics/config.yaml.
 
     Reads the ``dashboard.kanban`` section if present; defaults otherwise.
     Used by the UI to pre-select tenant filters, toggle markdown rendering,
@@ -1759,7 +1759,7 @@ def _configured_home_channels() -> list[dict]:
 
 
 def _active_profile_name() -> str:
-    """Return the current Hermes profile name for notify-sub ownership."""
+    """Return the current Cybernetics profile name for notify-sub ownership."""
     try:
         from hermes_cli.profiles import get_active_profile_name
         return get_active_profile_name() or "default"
@@ -1894,7 +1894,7 @@ def get_stats(board: Optional[str] = Query(None)):
 def get_assignees(board: Optional[str] = Query(None)):
     """Known profiles + per-profile task counts.
 
-    Returns the union of ``~/.hermes/profiles/*`` on disk and every
+    Returns the union of ``~/.cybernetics/profiles/*`` on disk and every
     distinct assignee currently used on the board. The dashboard uses
     this to populate its assignee dropdown so a freshly-created profile
     appears in the picker before it's been given any task.
@@ -2182,7 +2182,7 @@ def auto_describe_profile(profile_name: str, payload: DescribeAutoBody):
     ``description_auto: true`` so the dashboard can surface a "review"
     badge.
 
-    Maps 1:1 to ``hermes profile describe <name> --auto``. Non-OK
+    Maps 1:1 to ``cybernetics profile describe <name> --auto``. Non-OK
     outcomes are NOT HTTP errors — the UI renders the reason inline
     (e.g. "no auxiliary client configured") so the operator can fix
     config and retry without a page reload.
@@ -2219,7 +2219,7 @@ def decompose_task_endpoint(
 ):
     """Fan a triage-column task out into a graph of child tasks via the
     auxiliary LLM, routed to specialist profiles by description. Maps
-    1:1 to ``hermes kanban decompose <task_id>``.
+    1:1 to ``cybernetics kanban decompose <task_id>``.
 
     Returns the outcome shape used by the CLI: ``{ok, task_id, reason,
     fanout, child_ids, new_title}``. A non-OK outcome is NOT an HTTP
@@ -2307,7 +2307,7 @@ def get_orchestration_settings():
 
 @router.put("/orchestration")
 def set_orchestration_settings(payload: OrchestrationSettingsBody):
-    """Update the kanban orchestration knobs in ~/.hermes/config.yaml.
+    """Update the kanban orchestration knobs in ~/.cybernetics/config.yaml.
 
     Each field is optional — only fields explicitly passed are
     written. ``orchestrator_profile`` / ``default_assignee`` accept

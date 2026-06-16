@@ -1,6 +1,6 @@
 """SelfHostedOIDCProvider — generic self-hosted OpenID Connect dashboard auth.
 
-A standards-compliant OpenID Connect Relying Party for the ``hermes dashboard``
+A standards-compliant OpenID Connect Relying Party for the ``cybernetics dashboard``
 OAuth gate. Unlike the bundled ``nous`` provider (which encodes Nous Portal's
 bespoke contract — ``agent:{instance_id}`` client ids, a custom access-token
 JWT, the ``x-nous-refresh-token`` header, an ``oauth_contract_version`` claim),
@@ -47,8 +47,8 @@ same precedence convention as the ``nous`` plugin)::
       oauth:
         provider: self-hosted
         self_hosted:
-          issuer: https://auth.example.com/application/o/hermes/   # required
-          client_id: hermes-dashboard                              # required
+          issuer: https://auth.example.com/application/o/cybernetics/   # required
+          client_id: cybernetics-dashboard                              # required
           scopes: "openid profile email"                           # optional
 
     # Environment overrides (Docker/Fly secret injection)
@@ -553,7 +553,7 @@ class SelfHostedOIDCProvider(DashboardAuthProvider):
 
         The verified ID token is stored in ``Session.access_token`` so the
         per-request ``verify_session`` re-verifies a real JWT. The opaque
-        OAuth access token is intentionally NOT stored — Hermes does not call
+        OAuth access token is intentionally NOT stored — Cybernetics does not call
         any resource API with it; the dashboard only needs identity.
         """
         user_id = str(claims.get("sub", ""))

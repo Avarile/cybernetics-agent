@@ -1,17 +1,17 @@
-// Hermes Agent — Photon Spectrum sidecar
+// Cybernetics Agent — Photon Spectrum sidecar
 //
 // Spawned by `plugins/platforms/photon/adapter.py` to bridge BOTH directions
 // of messaging to Photon's Spectrum platform via the `spectrum-ts` SDK (the
 // SDK is TypeScript-only, so a Node sidecar is unavoidable — there is no
 // Python SDK and no public HTTP message API).
 //
-// Inbound  (gRPC -> Hermes): the SDK's `app.messages` async iterator is a
+// Inbound  (gRPC -> Cybernetics): the SDK's `app.messages` async iterator is a
 //   long-lived gRPC stream. We serialize each `[space, message]` to a
 //   normalized JSON event and stream it to the Python adapter over a
 //   loopback `GET /inbound` (NDJSON). We pause pulling from the stream while
 //   no consumer is attached so a backlog isn't pulled-and-lost before the
 //   gateway connects.
-// Outbound (Hermes -> gRPC): `/send` drives `space.send(...)`; `/typing`
+// Outbound (Cybernetics -> gRPC): `/send` drives `space.send(...)`; `/typing`
 //   sends the documented `typing("start" | "stop")` content builder.
 //
 // Protocol (all requests require `X-Hermes-Sidecar-Token: ${TOKEN}`):
@@ -52,7 +52,7 @@
 //                          adapter, which holds our stdin pipe — parent-death
 //                          detection so a dead gateway can't orphan us)
 //   PHOTON_TELEMETRY       enable Spectrum SDK telemetry ("true"/"1"/"on"/"yes";
-//                          default off — toggle with `hermes photon telemetry`)
+//                          default off — toggle with `cybernetics photon telemetry`)
 
 import http from "node:http";
 import crypto from "node:crypto";
@@ -487,7 +487,7 @@ function tokenOk(header) {
 }
 
 const server = http.createServer(async (req, res) => {
-  if (!tokenOk(req.headers["x-hermes-sidecar-token"])) {
+  if (!tokenOk(req.headers["x-cybernetics-sidecar-token"])) {
     return unauthorized(res);
   }
   // Long-lived inbound NDJSON stream.
@@ -533,7 +533,7 @@ const server = http.createServer(async (req, res) => {
       const space = await resolveSpace(spaceId);
 
       // spectrum-ts infers name + MIME from the file extension; pass
-      // overrides only when Hermes supplied them so a known-good
+      // overrides only when Cybernetics supplied them so a known-good
       // inference isn't clobbered with an empty string.
       const opts = {};
       if (name) opts.name = name;

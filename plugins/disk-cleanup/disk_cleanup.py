@@ -1,4 +1,4 @@
-"""disk_cleanup — ephemeral file cleanup for Hermes Agent.
+"""disk_cleanup — ephemeral file cleanup for Cybernetics Agent.
 
 Library module wrapping the deterministic cleanup rules written by
 @LVT382009 in PR #12212. The plugin ``__init__.py`` wires these
@@ -15,8 +15,8 @@ Rules:
   - chrome-profile→ prompt after 14 days (deep only)
   - >500 MB files → prompt always (deep only)
 
-Scope: strictly HERMES_HOME and /tmp/hermes-*
-Never touches: ~/.hermes/logs/ or any system directory.
+Scope: strictly HERMES_HOME and /tmp/cybernetics-*
+Never touches: ~/.cybernetics/logs/ or any system directory.
 """
 
 from __future__ import annotations
@@ -64,7 +64,7 @@ def get_log_file() -> Path:
 # ---------------------------------------------------------------------------
 
 def is_safe_path(path: Path) -> bool:
-    """Accept only paths under HERMES_HOME or ``/tmp/hermes-*``.
+    """Accept only paths under HERMES_HOME or ``/tmp/cybernetics-*``.
 
     Rejects Windows mounts (``/mnt/c`` etc.) and any system directory.
     """
@@ -74,9 +74,9 @@ def is_safe_path(path: Path) -> bool:
         return True
     except (ValueError, OSError):
         pass
-    # Allow /tmp/hermes-* explicitly
+    # Allow /tmp/cybernetics-* explicitly
     parts = path.parts
-    if len(parts) >= 3 and parts[1] == "tmp" and parts[2].startswith("hermes-"):
+    if len(parts) >= 3 and parts[1] == "tmp" and parts[2].startswith("cybernetics-"):
         return True
     return False
 
@@ -355,7 +355,7 @@ def quick() -> Dict[str, Any]:
     _PROTECTED_TOP_LEVEL = {
         "logs", "memories", "sessions", "cron", "cronjobs",
         "cache", "skills", "plugins", "disk-cleanup", "optional-skills",
-        "hermes-agent", "backups", "profiles", ".worktrees",
+        "cybernetics-agent", "backups", "profiles", ".worktrees",
     }
     empty_removed = 0
     try:
@@ -534,7 +534,7 @@ def guess_category(path: Path) -> Optional[str]:
         if top in {
             "disk-cleanup", "logs", "memories", "sessions", "config.yaml",
             "skills", "plugins", ".env", "USER.md", "MEMORY.md", "SOUL.md",
-            "auth.json", "hermes-agent",
+            "auth.json", "cybernetics-agent",
         }:
             return None
         if top == "cron" or top == "cronjobs":
@@ -549,7 +549,7 @@ def guess_category(path: Path) -> Optional[str]:
         if top == "cache":
             return "temp"
     except ValueError:
-        # Path isn't under HERMES_HOME (e.g. /tmp/hermes-*) — fall through.
+        # Path isn't under HERMES_HOME (e.g. /tmp/cybernetics-*) — fall through.
         pass
 
     name = path.name

@@ -96,12 +96,12 @@ Rules:
 - TTL: 60–180 seconds (configurable).
 - Single-flight dedupe for scan requests.
 - Persist plugin data under:
-  - `~/.hermes/plugins/cybernetics-achievements/scan_snapshot.json`
+  - `~/.cybernetics/plugins/cybernetics-achievements/scan_snapshot.json`
 
 ### Phase 2
 - Incremental scan checkpoints with per-session fingerprints.
 - Persist checkpoint data under:
-  - `~/.hermes/plugins/cybernetics-achievements/scan_checkpoint.json`
+  - `~/.cybernetics/plugins/cybernetics-achievements/scan_checkpoint.json`
 - Checkpoint stores, per session:
   - `session_id`
   - fingerprint (`updated_at`, message_count, or hash)
@@ -166,7 +166,7 @@ Expose minimal diagnostics in `/scan-status`.
 ## 12) Persistence Files (Explicit)
 
 Plugin state directory:
-- `~/.hermes/plugins/cybernetics-achievements/`
+- `~/.cybernetics/plugins/cybernetics-achievements/`
 
 Files:
 - `state.json` (existing): unlock tracking
