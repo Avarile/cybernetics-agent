@@ -406,7 +406,7 @@ resolve_install_layout() {
         export UV_PYTHON_BIN_DIR="${UV_PYTHON_BIN_DIR:-/usr/local/share/uv/bin}"
         log_info "Root install on Linux — using FHS layout"
         log_info "  Code:    $INSTALL_DIR"
-        log_info "  Command: /usr/local/bin/cybernetics (with hermes alias)"
+        log_info "  Command: /usr/local/bin/cybernetics"
         log_info "  Data:    $HERMES_HOME (unchanged)"
         log_info "  uv Python: $UV_PYTHON_INSTALL_DIR (world-readable)"
         return 0
@@ -444,11 +444,9 @@ get_command_link_display_dir() {
 get_cybernetics_command_path() {
     local link_dir
     link_dir="$(get_command_link_dir)"
-    # Prefer the cybernetics symlink, fall back to legacy hermes for older installs.
+    # Prefer the cybernetics symlink.
     if [ -x "$link_dir/cybernetics" ]; then
         echo "$link_dir/cybernetics"
-    elif [ -x "$link_dir/hermes" ]; then
-        echo "$link_dir/hermes"
     else
         echo "cybernetics"
     fi
@@ -526,8 +524,8 @@ install_uv() {
     # `curl | sh` masks curl failures (sh exits 0 on empty stdin)
     # and conflates network errors with installer errors.
     local _uv_install_log _uv_installer
-    _uv_install_log="$(mktemp 2>/dev/null || echo "/tmp/hermes-uv-install.$$.log")"
-    _uv_installer="$(mktemp 2>/dev/null || echo "/tmp/hermes-uv-installer.$$.sh")"
+    _uv_install_log="$(mktemp 2>/dev/null || echo "/tmp/cybernetics-uv-install.$$.log")"
+    _uv_installer="$(mktemp 2>/dev/null || echo "/tmp/cybernetics-uv-installer.$$.sh")"
     if ! curl -LsSf https://astral.sh/uv/install.sh -o "$_uv_installer" 2>"$_uv_install_log"; then
         log_error "Failed to download uv installer from https://astral.sh/uv/install.sh"
         log_info "curl output:"
@@ -1143,7 +1141,7 @@ clone_repo() {
             local autostash_ref=""
             if [ -n "$(git status --porcelain)" ]; then
                 local stash_name
-                stash_name="hermes-install-autostash-$(date -u +%Y%m%d-%H%M%S)"
+                stash_name="cybernetics-install-autostash-$(date -u +%Y%m%d-%H%M%S)"
                 log_info "Local changes detected, stashing before update..."
                 git stash push --include-untracked -m "$stash_name"
                 autostash_ref="stash@{0}"
@@ -1528,16 +1526,12 @@ setup_path() {
     log_info "Setting up cybernetics command..."
 
     if [ "$USE_VENV" = true ]; then
-        # Prefer the cybernetics entry point; fall back to the legacy hermes one
-        # for older venvs that pre-date the rename.
         CYBERNETICS_BIN="$INSTALL_DIR/venv/bin/cybernetics"
-        HERMES_BIN="$INSTALL_DIR/venv/bin/hermes"
-        if [ ! -x "$CYBERNETICS_BIN" ] && [ -x "$HERMES_BIN" ]; then
-            CYBERNETICS_BIN="$HERMES_BIN"
+        if [ ! -x "$CYBERNETICS_BIN" ]; then
+            log_warn "cybernetics entry point not found at $CYBERNETICS_BIN"
         fi
     else
-        CYBERNETICS_BIN="$(which cybernetics 2>/dev/null || which hermes 2>/dev/null || echo "")"
-        HERMES_BIN="$(which hermes 2>/dev/null || echo "$CYBERNETICS_BIN")"
+        CYBERNETICS_BIN="$(which cybernetics 2>/dev/null || echo "")"
         if [ -z "$CYBERNETICS_BIN" ]; then
             log_warn "cybernetics not found on PATH after install"
             return 0
@@ -1561,14 +1555,14 @@ setup_path() {
     command_link_dir="$(get_command_link_dir)"
     command_link_display_dir="$(get_command_link_display_dir)"
 
-    # Create user-facing shims for cybernetics (primary) and hermes (legacy alias).
+    # Create user-facing shim for cybernetics.
     # We intentionally clear PYTHONPATH/PYTHONHOME here so inherited env vars
     # can't make this launcher import modules from another checkout.
     mkdir -p "$command_link_dir"
     # Older installs created these paths as symlinks to the venv bin. Without
     # the rm, `cat >` follows the symlink and overwrites the venv pip entry
     # point with this shim — making `exec` self-recurse. (#21454)
-    rm -f "$command_link_dir/cybernetics" "$command_link_dir/hermes"
+    rm -f "$command_link_dir/cybernetics"
     cat > "$command_link_dir/cybernetics" <<EOF
 #!/usr/bin/env bash
 unset PYTHONPATH
@@ -1577,17 +1571,6 @@ exec "$CYBERNETICS_BIN" "\$@"
 EOF
     chmod +x "$command_link_dir/cybernetics"
     log_success "Installed cybernetics launcher → $command_link_display_dir/cybernetics"
-
-    # Legacy alias — same shim, points at the hermes venv entry point so any
-    # docs/scripts still calling `hermes` keep working.
-    cat > "$command_link_dir/hermes" <<EOF
-#!/usr/bin/env bash
-unset PYTHONPATH
-unset PYTHONHOME
-exec "$HERMES_BIN" "\$@"
-EOF
-    chmod +x "$command_link_dir/hermes"
-    log_success "Installed hermes alias → $command_link_display_dir/hermes"
 
     if [ "$DISTRO" = "termux" ]; then
         export PATH="$command_link_dir:$PATH"
@@ -1627,7 +1610,7 @@ EOF
                 log_success "Added /usr/local/bin to PATH in $SHELL_CONFIG"
             fi
         done
-        log_success "hermes command ready"
+        log_success "cybernetics command ready"
         return 0
     fi
 
@@ -1697,10 +1680,10 @@ EOF
         log_info "~/.local/bin already on PATH"
     fi
 
-    # Export for current session so hermes works immediately
+    # Export for current session so cybernetics works immediately
     export PATH="$command_link_dir:$PATH"
 
-    log_success "hermes command ready"
+    log_success "cybernetics command ready"
 }
 
 copy_config_templates() {
@@ -1981,12 +1964,12 @@ install_node_deps() {
         log_info "Installing TUI dependencies..."
         cd "$INSTALL_DIR/ui-tui"
         npm install --silent 2>/dev/null || {
-            log_warn "TUI npm install failed (hermes --tui may not work)"
+            log_warn "TUI npm install failed (cybernetics --tui may not work)"
         }
         log_success "TUI dependencies installed"
     fi
 
-    # Keep the checkout clean so `hermes update` doesn't autostash every run.
+    # Keep the checkout clean so `cybernetics update` doesn't autostash every run.
     restore_dirty_lockfiles "$INSTALL_DIR"
 }
 
@@ -2005,7 +1988,7 @@ run_setup_wizard() {
     # but opening fails with ENXIO, so the wizard would proceed and
     # then crash on `< /dev/tty` below.
     if ! (: </dev/tty) 2>/dev/null; then
-        log_info "Setup wizard skipped (no terminal available). Run 'hermes setup' after install."
+        log_info "Setup wizard skipped (no terminal available). Run 'cybernetics setup' after install."
         return 0
     fi
 
@@ -2055,14 +2038,14 @@ maybe_start_gateway() {
         if [ "$IS_INTERACTIVE" = true ]; then
             echo ""
             log_info "WhatsApp is enabled but not yet paired."
-            log_info "Running 'hermes whatsapp' to pair via QR code..."
+            log_info "Running 'cybernetics whatsapp' to pair via QR code..."
             echo ""
             if prompt_yes_no "Pair WhatsApp now?" "yes"; then
                 HERMES_CMD="$(get_cybernetics_command_path)"
                 $HERMES_CMD whatsapp || true
             fi
         else
-            log_info "WhatsApp pairing skipped (non-interactive). Run 'hermes whatsapp' to pair."
+            log_info "WhatsApp pairing skipped (non-interactive). Run 'cybernetics whatsapp' to pair."
         fi
     fi
 
@@ -2070,7 +2053,7 @@ maybe_start_gateway() {
     # in Docker builds where the device node is in the mount namespace
     # but opening fails with ENXIO. See #16746.
     if ! (: </dev/tty) 2>/dev/null; then
-        log_info "Gateway setup skipped (no terminal available). Run 'hermes gateway install' later."
+        log_info "Gateway setup skipped (no terminal available). Run 'cybernetics gateway install' later."
         return 0
     fi
 
@@ -2096,10 +2079,10 @@ maybe_start_gateway() {
                 if $HERMES_CMD gateway start 2>/dev/null; then
                     log_success "Gateway started! Your bot is now online."
                 else
-                    log_warn "Service installed but failed to start. Try: hermes gateway start"
+                    log_warn "Service installed but failed to start. Try: cybernetics gateway start"
                 fi
             else
-                log_warn "Systemd install failed. You can start manually: hermes gateway"
+                log_warn "Systemd install failed. You can start manually: cybernetics gateway"
             fi
         else
             if [ "$DISTRO" = "termux" ]; then
@@ -2111,13 +2094,13 @@ maybe_start_gateway() {
             GATEWAY_PID=$!
             log_success "Gateway started (PID $GATEWAY_PID). Logs: $HERMES_HOME/logs/gateway.log"
             log_info "To stop: kill $GATEWAY_PID"
-            log_info "To restart later: hermes gateway"
+            log_info "To restart later: cybernetics gateway"
             if [ "$DISTRO" = "termux" ]; then
                 log_warn "Android may stop background processes when Termux is suspended or the system reclaims resources."
             fi
         fi
     else
-        log_info "Skipped. Start the gateway later with: hermes gateway"
+        log_info "Skipped. Start the gateway later with: cybernetics gateway"
     fi
 }
 
@@ -2149,7 +2132,6 @@ print_success() {
     echo -e "   ${GREEN}cybernetics config edit${NC}  Open config in editor"
     echo -e "   ${GREEN}cybernetics gateway install${NC} Install gateway service (messaging + cron)"
     echo -e "   ${GREEN}cybernetics update${NC}       Update to latest version"
-    echo -e "   ${YELLOW}(Legacy 'hermes' alias is also installed.)${NC}"
     echo ""
 
     echo -e "${CYAN}─────────────────────────────────────────────────────────${NC}"
@@ -2321,12 +2303,12 @@ postinstall_mode() {
         ensure_browser
     fi
 
-    HERMES_CMD="$(command -v hermes 2>/dev/null || echo "")"
+    HERMES_CMD="$(command -v cybernetics 2>/dev/null || echo "")"
     if [ -n "$HERMES_CMD" ]; then
-        log_info "Running hermes setup..."
+        log_info "Running cybernetics setup..."
         "$HERMES_CMD" setup
     else
-        log_warn "hermes command not found on PATH"
+        log_warn "cybernetics command not found on PATH"
         log_info "Try: python -m hermes_cli.main setup"
     fi
 }

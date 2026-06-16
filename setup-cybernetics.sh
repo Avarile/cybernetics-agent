@@ -13,7 +13,7 @@
 # 2. Creates a Python 3.11 virtual environment
 # 3. Installs the appropriate dependency set for the platform
 # 4. Creates .env from template (if not exists)
-# 5. Symlinks the 'cybernetics' (and 'hermes' alias) CLI commands into a user-facing bin dir
+# 5. Symlinks the 'cybernetics' CLI command into a user-facing bin dir
 # 6. Runs the setup wizard (optional)
 # ============================================================================
 
@@ -342,27 +342,18 @@ else
 fi
 
 # ============================================================================
-# PATH setup — symlink cybernetics (and hermes alias) into a user-facing bin dir
+# PATH setup — symlink cybernetics into a user-facing bin dir
 # ============================================================================
 
 echo -e "${CYAN}→${NC} Setting up cybernetics command..."
 
 CYBERNETICS_BIN="$SCRIPT_DIR/venv/bin/cybernetics"
-HERMES_BIN="$SCRIPT_DIR/venv/bin/hermes"
 COMMAND_LINK_DIR="$(get_command_link_dir)"
 COMMAND_LINK_DISPLAY_DIR="$(get_command_link_display_dir)"
 mkdir -p "$COMMAND_LINK_DIR"
 # Primary command — point at the cybernetics entry-point shipped by pyproject.toml.
-# Fall back to the hermes entry-point if cybernetics wasn't installed (older venv).
-if [ -x "$CYBERNETICS_BIN" ]; then
-    ln -sf "$CYBERNETICS_BIN" "$COMMAND_LINK_DIR/cybernetics"
-else
-    ln -sf "$HERMES_BIN" "$COMMAND_LINK_DIR/cybernetics"
-fi
-# Legacy alias — keeps `hermes` working for any scripts/docs that still call it.
-ln -sf "$HERMES_BIN" "$COMMAND_LINK_DIR/hermes"
+ln -sf "$CYBERNETICS_BIN" "$COMMAND_LINK_DIR/cybernetics"
 echo -e "${GREEN}✓${NC} Symlinked cybernetics → $COMMAND_LINK_DISPLAY_DIR/cybernetics"
-echo -e "${GREEN}✓${NC} Symlinked hermes (legacy alias) → $COMMAND_LINK_DISPLAY_DIR/hermes"
 
 if is_termux; then
     export PATH="$COMMAND_LINK_DIR:$PATH"
@@ -463,7 +454,6 @@ fi
 echo "  cybernetics cron list     # View scheduled jobs"
 echo "  cybernetics doctor        # Diagnose issues"
 echo ""
-echo "(Legacy 'hermes' command still works as an alias.)"
 echo ""
 
 # Ask if they want to run setup wizard now

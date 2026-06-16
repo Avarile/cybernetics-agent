@@ -60,7 +60,7 @@ conservative at the waist.
   including large ones (a new messaging channel, a session-cap feature, a
   Windows PTY bridge). Breadth in the product is a goal, not a footprint
   concern — as long as it integrates with the existing setup/config UX
-  (`hermes tools`, `hermes setup`, auto-install) rather than bolting on a raw
+  (`cybernetics tools`, `cybernetics setup`, auto-install) rather than bolting on a raw
   env var.
 - **Refactor god-files into clean modules.** Extracting a multi-thousand-line
   cluster out of `cli.py` / `run_agent.py` / `gateway/run.py` into a focused
@@ -117,7 +117,7 @@ conservative at the waist.
   feature.
 - **Outbound telemetry / usage attribution without opt-in gating.** No new
   analytics, third-party identifier tagging, or attribution tags until a
-  generic user-facing opt-in (config gate + setup prompt + `hermes tools`
+  generic user-facing opt-in (config gate + setup prompt + `cybernetics tools`
   toggle) exists. Park behind a label, do not merge.
 - **Change-detector tests, cache-breaking mid-conversation, dead code wired in
   without E2E proof, and plugins that touch core files.** Plugins live in their
@@ -176,14 +176,14 @@ Each rung adds more permanent surface than the one above. Choose the highest
 1. **Extend existing code** — the capability is a variation of something that
    already exists. Zero new surface.
 2. **CLI command + skill** — manages config/state/infra expressible as shell
-   commands. The agent runs `hermes <subcommand>` guided by a skill. Zero
+   commands. The agent runs `cybernetics <subcommand>` guided by a skill. Zero
    model-tool footprint. Default choice for subscriptions, scheduled tasks,
-   service setup. Examples: `hermes webhook`, `hermes cron`, `hermes tools`.
+   service setup. Examples: `cybernetics webhook`, `cybernetics cron`, `cybernetics tools`.
 3. **Service-gated tool (`check_fn`)** — needs structured params/returns AND
    only appears when a prerequisite is configured. Zero footprint otherwise.
    Examples: Home Assistant tools (gated on token), memory-provider tools.
 4. **Plugin** — third-party/niche/user-specific capability that doesn't ship in
-   core. Lives in `~/.hermes/plugins/` or a pip package, discovered at runtime.
+   core. Lives in `~/.cybernetics/plugins/` or a pip package, discovered at runtime.
 5. **MCP server (in the catalog)** — if the capability genuinely needs to be a
    tool (structured I/O the agent invokes) but isn't core-fundamental, prefer
    building it as an MCP server and adding it to the MCP catalog over growing
@@ -258,14 +258,14 @@ hermes-agent/
 └── tests/                # Pytest suite (~17k tests across ~900 files as of May 2026)
 ```
 
-**User config:** `~/.hermes/config.yaml` (settings), `~/.hermes/.env` (API keys only).
-**Logs:** `~/.hermes/logs/` — `agent.log` (INFO+), `errors.log` (WARNING+),
+**User config:** `~/.cybernetics/config.yaml` (settings), `~/.cybernetics/.env` (API keys only).
+**Logs:** `~/.cybernetics/logs/` — `agent.log` (INFO+), `errors.log` (WARNING+),
 `gateway.log` when running the gateway. Profile-aware via `get_hermes_home()`.
-Browse with `hermes logs [--follow] [--level ...] [--session ...]`.
+Browse with `cybernetics logs [--follow] [--level ...] [--session ...]`.
 
 ## TypeScript Style
 
-Applies to TypeScript across Hermes: desktop, TUI, website, and future TS packages.
+Applies to TypeScript across Cybernetics: desktop, TUI, website, and future TS packages.
 
 - Prefer small nanostores over component state when state is shared, reused, or read by distant UI.
 - Let each feature own its atoms. Chat state belongs near chat, shell state near shell, shared state in `src/store`.
@@ -367,7 +367,7 @@ Reasoning content is stored in `assistant_msg["reasoning"]`.
 - `load_cli_config()` in cli.py merges hardcoded defaults + user config YAML
 - **Skin engine** (`hermes_cli/skin_engine.py`) — data-driven CLI theming; initialized from `display.skin` config key at startup; skins customize banner colors, spinner faces/verbs/wings, tool prefix, response box, branding text
 - `process_command()` is a method on `HermesCLI` — dispatches on canonical command name resolved via `resolve_command()` from the central registry
-- Skill slash commands: `agent/skill_commands.py` scans `~/.hermes/skills/`, injects as **user message** (not system prompt) to preserve prompt caching
+- Skill slash commands: `agent/skill_commands.py` scans `~/.cybernetics/skills/`, injects as **user message** (not system prompt) to preserve prompt caching
 
 ### Slash Command Registry (`hermes_cli/commands.py`)
 
@@ -377,7 +377,7 @@ All slash commands are defined in a central `COMMAND_REGISTRY` list of `CommandD
 - **Gateway** — `GATEWAY_KNOWN_COMMANDS` frozenset for hook emission, `resolve_command()` for dispatch
 - **Gateway help** — `gateway_help_lines()` generates `/help` output
 - **Telegram** — `telegram_bot_commands()` generates the BotCommand menu
-- **Slack** — `slack_subcommand_map()` generates `/hermes` subcommand routing
+- **Slack** — `slack_subcommand_map()` generates `/cybernetics` subcommand routing
 - **Autocomplete** — `COMMANDS` flat dict feeds `SlashCommandCompleter`
 - **CLI help** — `COMMANDS_BY_CATEGORY` dict feeds `show_help()`
 
@@ -416,12 +416,12 @@ if canonical == "mycommand":
 
 ## TUI Architecture (ui-tui + tui_gateway)
 
-The TUI is a full replacement for the classic (prompt_toolkit) CLI, activated via `hermes --tui` or `HERMES_TUI=1`.
+The TUI is a full replacement for the classic (prompt_toolkit) CLI, activated via `cybernetics --tui` or `HERMES_TUI=1`.
 
 ### Process Model
 
 ```
-hermes --tui
+cybernetics --tui
   └─ Node (Ink)  ──stdio JSON-RPC──  Python (tui_gateway)
        │                                  └─ AIAgent + tools + sessions
        └─ renders transcript, composer, prompts, activity
@@ -465,22 +465,22 @@ npm run fmt       # prettier
 npm test          # vitest
 ```
 
-### TUI in the Dashboard (`hermes dashboard` → `/chat`)
+### TUI in the Dashboard (`cybernetics dashboard` → `/chat`)
 
-The dashboard embeds the real `hermes --tui` — **not** a rewrite.  See `hermes_cli/pty_bridge.py` + the `@app.websocket("/api/pty")` endpoint in `hermes_cli/web_server.py`.
+The dashboard embeds the real `cybernetics --tui` — **not** a rewrite.  See `hermes_cli/pty_bridge.py` + the `@app.websocket("/api/pty")` endpoint in `hermes_cli/web_server.py`.
 
 - Browser loads `web/src/pages/ChatPage.tsx`, which mounts xterm.js's `Terminal` with the WebGL renderer, `@xterm/addon-fit` for container-driven resize, and `@xterm/addon-unicode11` for modern wide-character widths.
 - `/api/pty?token=…` upgrades to a WebSocket; auth uses the same ephemeral `_SESSION_TOKEN` as REST, via query param (browsers can't set `Authorization` on WS upgrade).
-- The server spawns whatever `hermes --tui` would spawn, through `ptyprocess` (POSIX PTY — WSL works, native Windows does not).
+- The server spawns whatever `cybernetics --tui` would spawn, through `ptyprocess` (POSIX PTY — WSL works, native Windows does not).
 - Frames: raw PTY bytes each direction; resize via `\x1b[RESIZE:<cols>;<rows>]` intercepted on the server and applied with `TIOCSWINSZ`.
 
-**Do not re-implement the primary chat experience in React.** The main transcript, composer/input flow (including slash-command behavior), and PTY-backed terminal belong to the embedded `hermes --tui` — anything new you add to Ink shows up in the dashboard automatically. If you find yourself rebuilding the transcript or composer for the dashboard, stop and extend Ink instead.
+**Do not re-implement the primary chat experience in React.** The main transcript, composer/input flow (including slash-command behavior), and PTY-backed terminal belong to the embedded `cybernetics --tui` — anything new you add to Ink shows up in the dashboard automatically. If you find yourself rebuilding the transcript or composer for the dashboard, stop and extend Ink instead.
 
 **Structured React UI around the TUI is allowed when it is not a second chat surface.** Sidebar widgets, inspectors, summaries, status panels, and similar supporting views (e.g. `ChatSidebar`, `ModelPickerDialog`, `ToolCall`) are fine when they complement the embedded TUI rather than replacing the transcript / composer / terminal. Keep their state independent of the PTY child's session and surface their failures non-destructively so the terminal pane keeps working unimpaired.
 
 ### Electron Desktop Chat App (`apps/desktop/`)
 
-A **separate** chat surface from both the classic CLI and the dashboard's embedded TUI. It is an Electron + React + nanostore renderer (`@assistant-ui/react`) that talks to a `tui_gateway` backend over JSON-RPC (`requestGateway(method, params)`). It does NOT embed `hermes --tui` — it has its own composer, transcript, and slash-command pipeline. Route desktop bugs to the `hermes-desktop-app-work` skill, not `hermes-dashboard-work`.
+A **separate** chat surface from both the classic CLI and the dashboard's embedded TUI. It is an Electron + React + nanostore renderer (`@assistant-ui/react`) that talks to a `tui_gateway` backend over JSON-RPC (`requestGateway(method, params)`). It does NOT embed `cybernetics --tui` — it has its own composer, transcript, and slash-command pipeline. Route desktop bugs to the `hermes-desktop-app-work` skill, not `hermes-dashboard-work`.
 
 **Slash commands in the desktop app are curated client-side, then dispatched to the backend.** The pipeline:
 
@@ -488,7 +488,7 @@ A **separate** chat surface from both the classic CLI and the dashboard's embedd
 - **The renderer curates via `apps/desktop/src/lib/desktop-slash-commands.ts`.** This is the load-bearing file. It holds `DESKTOP_COMMANDS` (the ~19 built-ins shown in the palette) plus block-lists for terminal-only / messaging-only / picker-owned / settings-owned / advanced commands that should NOT clutter the desktop popover.
   - `isDesktopSlashCommand(name)` — gates **execution**. Returns true for built-ins AND for any non-built-in (skill / quick command), so typed extension commands run.
   - `isDesktopSlashSuggestion(name)` — gates **discovery/completion**. Used by BOTH completion paths in `app/chat/composer/hooks/use-slash-completions.ts` (empty-query catalog filter + typed-query `complete.slash` filter) and by `filterDesktopCommandsCatalog`.
-  - `isDesktopSlashExtensionCommand(name)` — true when the command is NOT a known Hermes built-in (i.e. a skill or user quick command). Both suggestion and catalog-filter paths allow extensions through so skill commands surface in the palette. (Added when fixing "skill commands missing from the desktop slash palette" — the curated allow-list was silently dropping every skill/quick command from completions even though they executed fine when typed.)
+  - `isDesktopSlashExtensionCommand(name)` — true when the command is NOT a known Cybernetics built-in (i.e. a skill or user quick command). Both suggestion and catalog-filter paths allow extensions through so skill commands surface in the palette. (Added when fixing "skill commands missing from the desktop slash palette" — the curated allow-list was silently dropping every skill/quick command from completions even though they executed fine when typed.)
 - **Dispatch** lives in `app/session/hooks/use-prompt-actions.ts` (`runSlash`): built-ins that the desktop owns (`/skin`, `/help`, `/new`, …) are handled locally or via `commands.catalog`; everything else goes to `slash.exec`, falling back to `command.dispatch` (which the gateway resolves into skill / alias / exec directives). A skill command resolves to `{type: "skill", message}` and is submitted as a normal prompt.
 
 **Rule:** the desktop slash palette's curation is about hiding noise (terminal-only / messaging-only built-ins), NOT about hiding user-activated extensions. Skill commands and `quick_commands` are extensions the backend surfaces — they belong in completions. If you tighten `desktop-slash-commands.ts`, keep `isDesktopSlashExtensionCommand` flowing into both the suggestion and catalog-filter paths. Tests: `apps/desktop/src/lib/desktop-slash-commands.test.ts` (run via the repo-root `vitest`, since `apps/desktop` resolves deps from the root workspace install).
@@ -499,14 +499,14 @@ A **separate** chat surface from both the classic CLI and the dashboard's embedd
 
 Before adding any tool, settle the footprint question first (see "The
 Footprint Ladder" in the Contribution Rubric): most capabilities should NOT
-be core tools. For custom or local-only tools, do **not** edit Hermes core.
-Use the plugin route instead: create `~/.hermes/plugins/<name>/plugin.yaml`
-and `~/.hermes/plugins/<name>/__init__.py`, then register tools with
+be core tools. For custom or local-only tools, do **not** edit Cybernetics core.
+Use the plugin route instead: create `~/.cybernetics/plugins/<name>/plugin.yaml`
+and `~/.cybernetics/plugins/<name>/__init__.py`, then register tools with
 `ctx.register_tool(...)`. Plugin toolsets are discovered automatically and can be
 enabled or disabled without touching `tools/` or `toolsets.py`.
 
 Use the built-in route below only when the user is explicitly contributing a new
-core Hermes tool that should ship in the base system.
+core Cybernetics tool that should ship in the base system.
 
 Built-in/core tools require changes in **2 files**:
 
@@ -539,7 +539,7 @@ The registry handles schema collection, dispatch, availability checking, and err
 
 **Path references in tool schemas**: If the schema description mentions file paths (e.g. default output directories), use `display_hermes_home()` to make them profile-aware. The schema is generated at import time, which is after `_apply_profile_override()` sets `HERMES_HOME`.
 
-**State files**: If a tool stores persistent state (caches, logs, checkpoints), use `get_hermes_home()` for the base directory — never `Path.home() / ".hermes"`. This ensures each profile gets its own state.
+**State files**: If a tool stores persistent state (caches, logs, checkpoints), use `get_hermes_home()` for the base directory — never `Path.home() / ".cybernetics"`. This ensures each profile gets its own state.
 
 **Agent-level tools** (todo, memory): intercepted by `run_agent.py` before `handle_function_call()`. See `tools/todo_tool.py` for the pattern.
 
@@ -616,7 +616,7 @@ the env var in code (see `gateway_timeout`, `terminal.cwd` → `TERMINAL_CWD`).
 | Loader | Used by | Location |
 |--------|---------|----------|
 | `load_cli_config()` | CLI mode | `cli.py` — merges CLI-specific defaults + user YAML |
-| `load_config()` | `hermes tools`, `hermes setup`, most CLI subcommands | `hermes_cli/config.py` — merges `DEFAULT_CONFIG` + user YAML |
+| `load_config()` | `cybernetics tools`, `cybernetics setup`, most CLI subcommands | `hermes_cli/config.py` — merges `DEFAULT_CONFIG` + user YAML |
 | Direct YAML load | Gateway runtime | `gateway/run.py` + `gateway/config.py` — reads user YAML raw |
 
 If you add a new key and the CLI sees it but the gateway doesn't (or vice
@@ -694,7 +694,7 @@ Add to `_BUILTIN_SKINS` dict in `hermes_cli/skin_engine.py`:
 
 ### User skins (YAML)
 
-Users create `~/.hermes/skins/<name>.yaml`:
+Users create `~/.cybernetics/skins/<name>.yaml`:
 
 ```yaml
 name: cyberpunk
@@ -723,13 +723,13 @@ Activate with `/skin cyberpunk` or `display.skin: cyberpunk` in config.yaml.
 
 ## Plugins
 
-Hermes has two plugin surfaces. Both live under `plugins/` in the repo so
+Cybernetics has two plugin surfaces. Both live under `plugins/` in the repo so
 repo-shipped plugins can be discovered alongside user-installed ones in
-`~/.hermes/plugins/` and pip-installed entry points.
+`~/.cybernetics/plugins/` and pip-installed entry points.
 
 ### General plugins (`hermes_cli/plugins.py` + `plugins/<name>/`)
 
-`PluginManager` discovers plugins from `~/.hermes/plugins/`, `./.hermes/plugins/`,
+`PluginManager` discovers plugins from `~/.cybernetics/plugins/`, `./.cybernetics/plugins/`,
 and pip entry points. Each plugin exposes a `register(ctx)` function that
 can:
 
@@ -738,8 +738,8 @@ can:
   `on_session_start`, `on_session_end`
 - Register new tools via `ctx.register_tool(...)`
 - Register CLI subcommands via `ctx.register_cli_command(...)` — the
-  plugin's argparse tree is wired into `hermes` at startup so
-  `hermes <pluginname> <subcmd>` works with no change to `main.py`
+  plugin's argparse tree is wired into `cybernetics` at startup so
+  `cybernetics <pluginname> <subcmd>` works with no change to `main.py`
 
 Hooks are invoked from `model_tools.py` (pre/post tool) and `run_agent.py`
 (lifecycle). **Discovery timing pitfall:** `discover_plugins()` only runs
@@ -760,10 +760,10 @@ and is orchestrated by `agent/memory_manager.py`. Lifecycle hooks include
 
 **CLI commands via `plugins/memory/<name>/cli.py`:** if a memory plugin
 defines `register_cli(subparser)`, `discover_plugin_cli_commands()` finds
-it at argparse setup time and wires it into `hermes <plugin>`. The
+it at argparse setup time and wires it into `cybernetics <plugin>`. The
 framework only exposes CLI commands for the **currently active** memory
 provider (read from `memory.provider` in config.yaml), so disabled
-providers don't clutter `hermes --help`.
+providers don't clutter `cybernetics --help`.
 
 **Rule (Teknium, May 2026):** plugins MUST NOT modify core files
 (`run_agent.py`, `cli.py`, `gateway/run.py`, `hermes_cli/main.py`, etc.).
@@ -775,9 +775,9 @@ honcho argparse from `main.py` for exactly this reason.
 **No new in-tree memory providers (policy, May 2026):** the set of
 built-in memory providers under `plugins/memory/` is closed. New memory
 backends must ship as **standalone plugin repos** that users install
-into `~/.hermes/plugins/` (or via pip entry points) — they implement
+into `~/.cybernetics/plugins/` (or via pip entry points) — they implement
 the same `MemoryProvider` ABC, register through the same discovery
-path, and integrate via `hermes memory setup` / `post_setup()` without
+path, and integrate via `cybernetics memory setup` / `post_setup()` without
 landing in this tree. PRs that add a new directory under
 `plugins/memory/` will be closed with a pointer to publish the
 provider as its own repo. Existing in-tree providers stay; bug fixes
@@ -829,7 +829,7 @@ Two parallel surfaces:
   Organized by category directories (e.g. `skills/github/`, `skills/mlops/`).
 - **`optional-skills/`** — heavier or niche skills shipped with the repo but
   NOT active by default. Installed explicitly via
-  `hermes skills install official/<category>/<skill>`. Adapter lives in
+  `cybernetics skills install official/<category>/<skill>`. Adapter lives in
   `tools/skills_hub.py` (`OptionalSkillSource`). Categories include
   `autonomous-ai-agents`, `blockchain`, `communication`, `creative`,
   `devops`, `email`, `health`, `mcp`, `migration`, `mlops`, `productivity`,
@@ -945,7 +945,7 @@ Current toolset keys: `browser`, `clarify`, `code_execution`, `cronjob`,
 `messaging`, `moa`, `rl`, `safe`, `search`, `session_search`, `skills`,
 `spotify`, `terminal`, `todo`, `tts`, `video`, `vision`, `web`, `yuanbao`.
 
-Enable/disable per platform via `hermes tools` (the curses UI) or the
+Enable/disable per platform via `cybernetics tools` (the curses UI) or the
 `tools.<platform>.enabled` / `tools.<platform>.disabled` lists in
 `config.yaml`.
 
@@ -988,15 +988,15 @@ work that must outlive the current turn, use `cronjob` or
 
 Background skill-maintenance system that tracks usage on agent-created
 skills and auto-archives stale ones. Users never lose skills; archives
-go to `~/.hermes/skills/.archive/` and are restorable.
+go to `~/.cybernetics/skills/.archive/` and are restorable.
 
 - **Core:** `agent/curator.py` (review loop, auto-transitions, LLM review
   prompt) + `agent/curator_backup.py` (pre-run tar.gz snapshots).
-- **CLI:** `hermes_cli/curator.py` wires `hermes curator <verb>` where
+- **CLI:** `hermes_cli/curator.py` wires `cybernetics curator <verb>` where
   verbs are: `status`, `run`, `pause`, `resume`, `pin`, `unpin`,
   `archive`, `restore`, `prune`, `backup`, `rollback`.
 - **Telemetry:** `tools/skill_usage.py` owns the sidecar
-  `~/.hermes/skills/.usage.json` — per-skill `use_count`, `view_count`,
+  `~/.cybernetics/skills/.usage.json` — per-skill `use_count`, `view_count`,
   `patch_count`, `last_activity_at`, `state` (active / stale /
   archived), `pinned`.
 
@@ -1021,7 +1021,7 @@ Full user-facing docs: `website/docs/user-guide/features/curator.md`.
 ## Cron (scheduled jobs)
 
 `cron/jobs.py` (job store) + `cron/scheduler.py` (tick loop). Agents
-schedule jobs via the `cronjob` tool; users via `hermes cron <verb>`
+schedule jobs via the `cronjob` tool; users via `cybernetics cron <verb>`
 (`list`, `add`, `edit`, `pause`, `resume`, `run`, `remove`) or the
 `/cron` slash command.
 
@@ -1043,7 +1043,7 @@ Hardening invariants:
   cannot monopolize the scheduler.
 - Catchup window: half the job's period, clamped to 120s–2h.
 - Grace window: 120s for one-shot jobs whose fire time was missed.
-- File lock at `~/.hermes/cron/.tick.lock` prevents duplicate ticks
+- File lock at `~/.cybernetics/cron/.tick.lock` prevents duplicate ticks
   across processes.
 - Cron sessions pass `skip_memory=True` by default; memory providers
   intentionally do not run during cron.
@@ -1057,12 +1057,12 @@ main conversation's message-role alternation stays intact.
 ## Kanban (multi-agent work queue)
 
 Durable SQLite-backed board that lets multiple profiles / workers
-collaborate on shared tasks. Users drive it via `hermes kanban <verb>`;
+collaborate on shared tasks. Users drive it via `cybernetics kanban <verb>`;
 workers spawned by the dispatcher drive it via a dedicated `kanban_*`
 toolset so their schema footprint is zero when they're not inside a
 kanban task.
 
-- **CLI:** `hermes_cli/kanban.py` wires `hermes kanban` with verbs
+- **CLI:** `hermes_cli/kanban.py` wires `cybernetics kanban` with verbs
   `init`, `create`, `list` (alias `ls`), `show`, `assign`, `link`,
   `unlink`, `comment`, `complete`, `block`, `unblock`, `archive`,
   `tail`, plus less-commonly-used `watch`, `stats`, `runs`, `log`,
@@ -1137,36 +1137,36 @@ automatically scope to the active profile.
 ### Rules for profile-safe code
 
 1. **Use `get_hermes_home()` for all HERMES_HOME paths.** Import from `hermes_constants`.
-   NEVER hardcode `~/.hermes` or `Path.home() / ".hermes"` in code that reads/writes state.
+   NEVER hardcode `~/.cybernetics` or `Path.home() / ".cybernetics"` in code that reads/writes state.
    ```python
    # GOOD
    from hermes_constants import get_hermes_home
    config_path = get_hermes_home() / "config.yaml"
 
    # BAD — breaks profiles
-   config_path = Path.home() / ".hermes" / "config.yaml"
+   config_path = Path.home() / ".cybernetics" / "config.yaml"
    ```
 
 2. **Use `display_hermes_home()` for user-facing messages.** Import from `hermes_constants`.
-   This returns `~/.hermes` for default or `~/.hermes/profiles/<name>` for profiles.
+   This returns `~/.cybernetics` for default or `~/.cybernetics/profiles/<name>` for profiles.
    ```python
    # GOOD
    from hermes_constants import display_hermes_home
    print(f"Config saved to {display_hermes_home()}/config.yaml")
 
    # BAD — shows wrong path for profiles
-   print("Config saved to ~/.hermes/config.yaml")
+   print("Config saved to ~/.cybernetics/config.yaml")
    ```
 
 3. **Module-level constants are fine** — they cache `get_hermes_home()` at import time,
    which is AFTER `_apply_profile_override()` sets the env var. Just use `get_hermes_home()`,
-   not `Path.home() / ".hermes"`.
+   not `Path.home() / ".cybernetics"`.
 
 4. **Tests that mock `Path.home()` must also set `HERMES_HOME`** — since code now uses
-   `get_hermes_home()` (reads env var), not `Path.home() / ".hermes"`:
+   `get_hermes_home()` (reads env var), not `Path.home() / ".cybernetics"`:
    ```python
    with patch.object(Path, "home", return_value=tmp_path), \
-        patch.dict(os.environ, {"HERMES_HOME": str(tmp_path / ".hermes")}):
+        patch.dict(os.environ, {"HERMES_HOME": str(tmp_path / ".cybernetics")}):
        ...
    ```
 
@@ -1177,15 +1177,15 @@ automatically scope to the active profile.
    See `gateway/platforms/telegram.py` for the canonical pattern.
 
 6. **Profile operations are HOME-anchored, not HERMES_HOME-anchored** — `_get_profiles_root()`
-   returns `Path.home() / ".hermes" / "profiles"`, NOT `get_hermes_home() / "profiles"`.
-   This is intentional — it lets `hermes -p coder profile list` see all profiles regardless
+   returns `Path.home() / ".cybernetics" / "profiles"`, NOT `get_hermes_home() / "profiles"`.
+   This is intentional — it lets `cybernetics -p coder profile list` see all profiles regardless
    of which one is active.
 
 ## Known Pitfalls
 
-### DO NOT hardcode `~/.hermes` paths
+### DO NOT hardcode `~/.cybernetics` paths
 Use `get_hermes_home()` from `hermes_constants` for code paths. Use `display_hermes_home()`
-for user-facing print/log messages. Hardcoding `~/.hermes` breaks profiles — each profile
+for user-facing print/log messages. Hardcoding `~/.cybernetics` breaks profiles — each profile
 has its own `HERMES_HOME` directory. This was the source of 5 bugs fixed in PR #3575.
 
 ### DO NOT introduce new `simple_term_menu` usage
@@ -1229,7 +1229,7 @@ unused module into a live code path, E2E test the real resolution chain
 with actual imports (not mocks) against a temp `HERMES_HOME`.
 
 ### Tests must not write to `~/.hermes/`
-The `_isolate_hermes_home` autouse fixture in `tests/conftest.py` redirects `HERMES_HOME` to a temp dir. Never hardcode `~/.hermes/` paths in tests.
+The `_isolate_hermes_home` autouse fixture in `tests/conftest.py` redirects `HERMES_HOME` to a temp dir. Never hardcode `~/.cybernetics/` paths in tests.
 
 **Profile tests**: When testing profile features, also mock `Path.home()` so that
 `_get_profiles_root()` and `_get_default_hermes_home()` resolve within the temp dir.
@@ -1237,7 +1237,7 @@ Use the pattern from `tests/hermes_cli/test_profiles.py`:
 ```python
 @pytest.fixture
 def profile_env(tmp_path, monkeypatch):
-    home = tmp_path / ".hermes"
+    home = tmp_path / ".cybernetics"
     home.mkdir()
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.setenv("HERMES_HOME", str(home))
@@ -1290,7 +1290,7 @@ Five real sources of local-vs-CI drift the script closes:
 | | Without wrapper | With wrapper |
 |---|---|---|
 | Provider API keys | Whatever is in your env (auto-detects pool) | All `*_API_KEY`/`*_TOKEN`/etc. unset |
-| HOME / `~/.hermes/` | Your real config+auth.json | Temp dir per test |
+| HOME / `~/.cybernetics/` | Your real config+auth.json | Temp dir per test |
 | Timezone | Local TZ (PDT etc.) | UTC |
 | Locale | Whatever is set | C.UTF-8 |
 | xdist workers | `-n auto` = all cores | `-n auto` (safe — subprocess isolation prevents cross-worker flakes) |
