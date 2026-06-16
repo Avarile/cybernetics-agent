@@ -2509,8 +2509,8 @@ install_desktop() {
     if [ "$OS" = "linux" ]; then
         if [ -x "$desktop_dir/release/linux-unpacked/Hermes" ]; then
             app="$desktop_dir/release/linux-unpacked/Hermes"
-        elif [ -x "$desktop_dir/release/linux-unpacked/hermes" ]; then
-            app="$desktop_dir/release/linux-unpacked/hermes"
+        elif [ -x "$desktop_dir/release/linux-unpacked/cybernetics" ]; then
+            app="$desktop_dir/release/linux-unpacked/cybernetics"
         fi
     else
         local cand
