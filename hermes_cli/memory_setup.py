@@ -231,7 +231,7 @@ def cmd_setup(args) -> None:
 
     if not providers:
         print("\n  No memory provider plugins detected.")
-        print("  Install a plugin to ~/.hermes/plugins/ and try again.\n")
+        print("  Install a plugin to ~/.cybernetics/plugins/ and try again.\n")
         return
 
     # Build picker items
@@ -441,7 +441,7 @@ def cmd_status(args) -> None:
                     break
         else:
             print(f"\n  Plugin:    NOT installed ✗")
-            print(f"  Install the '{provider_name}' memory plugin to ~/.hermes/plugins/")
+            print(f"  Install the '{provider_name}' memory plugin to ~/.cybernetics/plugins/")
 
     providers = _get_available_providers()
     if providers:

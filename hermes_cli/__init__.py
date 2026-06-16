@@ -1,5 +1,5 @@
 """
-Hermes CLI - Unified command-line interface for Hermes Agent.
+Cybernetics CLI - Unified command-line interface for Cybernetics Agent.
 
 Provides subcommands for:
 - cybernetics chat          - Interactive chat (same as ./hermes)

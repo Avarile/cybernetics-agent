@@ -1,7 +1,7 @@
 """`cybernetics checkpoints` CLI subcommand.
 
 Gives users direct visibility and control over the filesystem checkpoint
-store at ``~/.hermes/checkpoints/``.  Actions:
+store at ``~/.cybernetics/checkpoints/``.  Actions:
 
     cybernetics checkpoints               # same as `status`
     cybernetics checkpoints status        # total size, project count, breakdown

@@ -1,7 +1,7 @@
 """Agent-construction and session-resume display methods for ``HermesCLI``.
 
 Extracted from ``cli.py`` as part of the god-file decomposition campaign
-(``~/.hermes/plans/god-file-decomposition.md``, Phase 4 step 2). This mixin holds
+(``~/.cybernetics/plans/god-file-decomposition.md``, Phase 4 step 2). This mixin holds
 the agent lifecycle/setup cluster: runtime-credential resolution, per-turn agent
 config, first-use agent construction, and resumed-session preload + history recap.
 
@@ -655,13 +655,13 @@ class CLIAgentSetupMixin:
                     lines.append(f"         {ml}\n", style="dim")
             elif role == "assistant_last":
                 # Last assistant response shown in full, non-dim
-                lines.append("  ◆ Hermes: ", style=f"bold {_assistant_label_c}")
+                lines.append("  ◆ Cybernetics: ", style=f"bold {_assistant_label_c}")
                 msg_lines = text.splitlines()
                 lines.append(msg_lines[0] + "\n", style="")
                 for ml in msg_lines[1:]:
                     lines.append(f"            {ml}\n", style="")
             else:
-                lines.append("  ◆ Hermes: ", style=f"dim bold {_assistant_label_c}")
+                lines.append("  ◆ Cybernetics: ", style=f"dim bold {_assistant_label_c}")
                 msg_lines = text.splitlines()
                 lines.append(msg_lines[0] + "\n", style="dim")
                 for ml in msg_lines[1:]:

@@ -1,7 +1,7 @@
-"""Hermes CLI skin/theme engine.
+"""Cybernetics CLI skin/theme engine.
 
 A data-driven skin system that lets users customize the CLI's visual appearance.
-Skins are defined as YAML files in ~/.hermes/skins/ or as built-in presets.
+Skins are defined as YAML files in ~/.cybernetics/skins/ or as built-in presets.
 No code changes are needed to add a new skin.
 
 SKIN YAML SCHEMA
@@ -411,10 +411,10 @@ _BUILTIN_SKINS: Dict[str, Dict[str, Any]] = {
         },
         "spinner": {},
         "branding": {
-            "agent_name": "Hermes Agent",
-            "welcome": "Welcome to Hermes Agent! Type your message or /help for commands.",
+            "agent_name": "Cybernetics Agent",
+            "welcome": "Welcome to Cybernetics Agent! Type your message or /help for commands.",
             "goodbye": "Goodbye! \u2695",
-            "response_label": " \u2695 Hermes ",
+            "response_label": " \u2695 Cybernetics ",
             "prompt_symbol": "\u276f",
             "help_header": "(^_^)? Available Commands",
         },

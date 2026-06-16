@@ -7,8 +7,8 @@ Usage::
     cybernetics hooks revoke <command>
     cybernetics hooks doctor
 
-Consent records live under ``~/.hermes/shell-hooks-allowlist.json`` and
-hook definitions come from the ``hooks:`` block in ``~/.hermes/config.yaml``
+Consent records live under ``~/.cybernetics/shell-hooks-allowlist.json`` and
+hook definitions come from the ``hooks:`` block in ``~/.cybernetics/config.yaml``
 (the same config read by the CLI / gateway at startup).
 
 This module is a thin CLI shell over :mod:`agent.shell_hooks`; every
@@ -55,7 +55,7 @@ def _cmd_list(_args) -> None:
     specs = shell_hooks.iter_configured_hooks(load_config())
 
     if not specs:
-        print("No shell hooks configured in ~/.hermes/config.yaml.")
+        print("No shell hooks configured in ~/.cybernetics/config.yaml.")
         print("See `cybernetics hooks --help` or")
         print("    website/docs/user-guide/features/hooks.md")
         print("for the config schema and worked examples.")
@@ -259,7 +259,7 @@ def _print_run_result(result: Dict[str, Any]) -> None:
 
     parsed = result.get("parsed")
     if parsed:
-        print(f"      parsed (Hermes wire shape): {json.dumps(parsed)}")
+        print(f"      parsed (Cybernetics wire shape): {json.dumps(parsed)}")
     else:
         print("      parsed: <none — hook contributed nothing to the dispatcher>")
 

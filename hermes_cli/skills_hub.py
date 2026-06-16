@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Skills Hub CLI — Unified interface for the Hermes Skills Hub.
+Skills Hub CLI — Unified interface for the Cybernetics Skills Hub.
 
 Powers both:
   - `cybernetics skills <subcommand>` (CLI argparse entry point)
@@ -164,7 +164,7 @@ def _is_valid_installed_skill_name(name: str) -> bool:
 
 
 def _existing_categories() -> List[str]:
-    """Return sorted subdirectory names under ``~/.hermes/skills/`` that look
+    """Return sorted subdirectory names under ``~/.cybernetics/skills/`` that look
     like category buckets (contain at least one ``SKILL.md`` somewhere below).
 
     Used to suggest reusable categories when interactively installing from a
@@ -231,7 +231,7 @@ def _prompt_for_category(c: Console, existing: List[str]) -> str:
         c.print(f"[dim]Existing: {', '.join(existing)}[/]")
     else:
         c.print(
-            "[bold]Category[/] [dim](optional — press Enter to install flat at ~/.hermes/skills/<name>/)[/]"
+            "[bold]Category[/] [dim](optional — press Enter to install flat at ~/.cybernetics/skills/<name>/)[/]"
         )
     try:
         answer = input("Category: ").strip()
@@ -1486,8 +1486,8 @@ def _github_publish(skill_path: Path, skill_name: str, target_repo: str,
             headers=headers, timeout=15,
             json={
                 "title": f"Add skill: {skill_name}",
-                "body": f"Submitting the `{skill_name}` skill via Hermes Skills Hub.\n\n"
-                        f"This skill was scanned by the Hermes Skills Guard before submission.",
+                "body": f"Submitting the `{skill_name}` skill via Cybernetics Skills Hub.\n\n"
+                        f"This skill was scanned by the Cybernetics Skills Guard before submission.",
                 "head": f"{fork_repo.split('/')[0]}:{branch_name}",
                 "base": default_branch,
             },

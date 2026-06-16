@@ -1,4 +1,4 @@
-"""``cybernetics debug`` debug tools for Hermes Agent.
+"""``cybernetics debug`` debug tools for Cybernetics Agent.
 
 Currently supports:
     cybernetics debug share    Upload debug report (system info + logs) to a
@@ -6,7 +6,7 @@ Currently supports:
                           By default, log content is run through
                           ``agent.redact.redact_sensitive_text`` with
                           ``force=True`` before upload so credentials in
-                          ``~/.hermes/logs/*.log`` are not leaked into
+                          ``~/.cybernetics/logs/*.log`` are not leaked into
                           the public paste service. Pass ``--no-redact``
                           to disable.
 """
@@ -62,7 +62,7 @@ _AUTO_DELETE_SECONDS = 21600
 # ---------------------------------------------------------------------------
 
 def _pending_file() -> Path:
-    """Path to ``~/.hermes/pastes/pending.json``.
+    """Path to ``~/.cybernetics/pastes/pending.json``.
 
     Each entry: ``{"url": "...", "expire_at": <unix_ts>}``.  Scheduled
     DELETEs used to be handled by spawning a detached Python process per
@@ -189,7 +189,7 @@ def _best_effort_sweep_expired_pastes() -> None:
 
 _PRIVACY_NOTICE = """\
 ⚠️  This will upload the following to a public paste service:
-  • System info (OS, Python version, Hermes version, provider, which API keys
+  • System info (OS, Python version, Cybernetics version, provider, which API keys
     are configured — NOT the actual keys)
   • Recent log lines (agent.log, errors.log, gateway.log, desktop.log — may
     contain conversation fragments and file paths)
@@ -249,7 +249,7 @@ def _schedule_auto_delete(urls: list[str], delay_seconds: int = _AUTO_DELETE_SEC
     every ``cybernetics debug share`` invocation added ~20 MB of resident Python
     interpreters that never exited until the sleep completed.
 
-    The replacement is stateless: we append to ``~/.hermes/pastes/pending.json``
+    The replacement is stateless: we append to ``~/.cybernetics/pastes/pending.json``
     and the gateway's cron ticker sweeps expired entries once per hour.
     ``cybernetics debug share`` also runs an opportunistic sweep as a fallback
     for CLI-only users.  If neither runs again, paste.rs's own retention
@@ -770,7 +770,7 @@ def run_debug_share(args):
     # Manual delete fallback
     print(f"To delete now:  cybernetics debug delete <url>")
 
-    print(f"\nShare these links with the Hermes team for support.")
+    print(f"\nShare these links with the Cybernetics team for support.")
 
 
 def run_debug_delete(args):

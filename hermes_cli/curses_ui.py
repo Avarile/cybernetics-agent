@@ -1,4 +1,4 @@
-"""Shared curses-based UI components for Hermes CLI.
+"""Shared curses-based UI components for Cybernetics CLI.
 
 Used by `cybernetics tools` and `cybernetics skills` for interactive checklists.
 Provides a curses multi-select with keyboard navigation, plus a
