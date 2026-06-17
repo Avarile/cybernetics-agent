@@ -2,7 +2,7 @@
 Backup and import commands for hermes CLI.
 
 `cybernetics backup` creates a zip archive of the entire ~/.cybernetics/ directory
-(excluding the hermes-agent repo and transient files).
+(excluding the cybernetics-agent repo and transient files).
 
 `cybernetics import` restores from a backup zip, overlaying onto the current
 HERMES_HOME root.
@@ -31,11 +31,11 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 # Directory names to skip entirely (matched against each path component)
-# ``hermes-agent`` is special-cased to root level only in ``_should_exclude``
-# so that skill directories like ``skills/autonomous-ai-agents/hermes-agent/``
+# ``cybernetics-agent`` is special-cased to root level only in ``_should_exclude``
+# so that skill directories like ``skills/autonomous-ai-agents/cybernetics-agent/``
 # are not accidentally excluded.
 _EXCLUDED_DIRS = {
-    "hermes-agent",     # the codebase repo — re-clone instead
+    "cybernetics-agent",  # the codebase repo — re-clone instead
     "__pycache__",      # bytecode caches — regenerated on import
     ".git",             # nested git dirs (profiles shouldn't have these, but safety)
     "node_modules",     # js deps if website/ somehow leaks in
@@ -69,16 +69,16 @@ _SECRET_FILE_NAMES = {".env", "auth.json", "state.db"}
 
 
 def _should_exclude(rel_path: Path) -> bool:
-    """Return True if *rel_path* (relative to cybernetics root) should be skipped."""
+    """Return True if *rel_path* (relative to Cybernetics home) should be skipped."""
     parts = rel_path.parts
 
     for part in parts:
         if part not in _EXCLUDED_DIRS:
             continue
-        # ``hermes-agent`` only matches at the root level (first component).
+        # ``cybernetics-agent`` only matches at the root level (first component).
         # Nested directories with the same name — e.g.
-        # ``skills/autonomous-ai-agents/hermes-agent/`` — must be preserved.
-        if part == "hermes-agent" and part != parts[0]:
+        # ``skills/autonomous-ai-agents/cybernetics-agent/`` — must be preserved.
+        if part == "cybernetics-agent" and part != parts[0]:
             continue
         return True
 
@@ -184,14 +184,14 @@ def run_backup(args) -> None:
         dp = Path(dirpath)
         rel_dir = dp.relative_to(hermes_root)
 
-        # Prune excluded directories in-place so os.walk doesn't descend
-        # ``hermes-agent`` is only pruned at the root level; nested dirs
+        # Prune excluded directories in-place so os.walk doesn't descend.
+        # ``cybernetics-agent`` is only pruned at the root level; nested dirs
         # with the same name (e.g. in skills/) must be preserved.
         is_root = rel_dir == Path(".")
         orig_dirnames = dirnames[:]
         dirnames[:] = [
             d for d in dirnames
-            if d not in _EXCLUDED_DIRS or (d == "hermes-agent" and not is_root)
+            if d not in _EXCLUDED_DIRS or (d == "cybernetics-agent" and not is_root)
         ]
         for removed in set(orig_dirnames) - set(dirnames):
             skipped_dirs.add(str(rel_dir / removed))
@@ -476,8 +476,8 @@ def run_import(args) -> None:
 
         # Guidance
         print()
-        if not (hermes_root / "hermes-agent").is_dir():
-            print("Note: The hermes-agent codebase was not included in the backup.")
+        if not (hermes_root / "cybernetics-agent").is_dir():
+            print("Note: The cybernetics-agent codebase was not included in the backup.")
             print("  If this is a fresh install, run: cybernetics update")
 
         if restored_profiles:

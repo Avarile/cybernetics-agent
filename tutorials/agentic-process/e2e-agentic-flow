@@ -1,0 +1,322 @@
+Now I have enough understanding to synthesize a comprehensive report.
+
+  Comprehensive Architecture Report: Cybernetics Agent — Data Processing & Prompt/Context Control
+
+  1. High-Level Architecture
+
+  The agent is a Python orchestrator built around a single AIAgent class (run_agent.py:320) that runs an iterative tool-calling loop. The agent has been heavily refactored: AIAgent is a thin shell, with all real logic
+  delegated to the agent/ package (~75 modules, ~2.3M LOC including adapters/helpers). Key subsystems:
+
+  ┌────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │       Layer        │                                         Module                                          │                                            Responsibility                                            │
+  ├────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Entry / lifecycle  │ run_agent.py + agent/agent_init.py                                                      │ AIAgent.__init__ forwards to init_agent() (88KB of setup)                                            │
+  ├────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Per-turn prologue  │ agent/turn_context.py                                                                   │ Sanitize input, restore/build system prompt, preflight compression, plugin pre_llm_call, memory      │
+  │                    │                                                                                         │ prefetch                                                                                             │
+  ├────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Main loop          │ agent/conversation_loop.py (241KB, ~5,400 LOC run_conversation)                         │ API call ↔ tool execution iteration with retries, fallbacks, compression                             │
+  ├────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ System prompt      │ agent/system_prompt.py + agent/prompt_builder.py                                        │ Three-tier prompt (stable/context/volatile), skills index, environment probe                         │
+  ├────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Context            │ agent/context_compressor.py (113KB) + agent/conversation_compression.py                 │ Auxiliary-model summarization with structured template                                               │
+  │ compression        │                                                                                         │                                                                                                      │
+  ├────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Tool execution     │ agent/tool_executor.py (69KB)                                                           │ Concurrent/sequential dispatch + guardrails + checkpoints                                            │
+  ├────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Provider           │ agent/transports/* + agent/anthropic_adapter.py (107KB) +                               │ Pluggable ProviderTransport ABC (convert_messages → convert_tools → build_kwargs →                   │
+  │ transports         │ agent/codex_responses_adapter.py                                                        │ normalize_response)                                                                                  │
+  ├────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Memory             │ agent/memory_manager.py + agent/memory_provider.py                                      │ Single external provider, prefetch/sync lifecycle, streaming context scrubber                        │
+  ├────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Post-loop          │ agent/turn_finalizer.py                                                                 │ Budget exhaustion summary, trajectory save, memory/skill review trigger                              │
+  └────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+  2. End-to-End Data Flow (one turn)
+
+  User message
+     ↓
+  build_turn_context (turn_context.py)
+     ├─ sanitize surrogates / non-ASCII
+     ├─ _restore_or_build_system_prompt → 3-tier prompt (stable + context + volatile)
+     ├─ hydrate todo/nudge counters from history
+     ├─ append user msg to `messages`
+     ├─ preflight compression (rough token estimate vs threshold)
+     ├─ pre_llm_call plugin hook (returns context to inject into user msg)
+     └─ external memory prefetch
+     ↓
+  LOOP (api_call_count < max_iterations) ─────────────────┐
+     ↓                                                     │
+     ├─ drain /steer into last tool message               │
+     ├─ build api_messages (inject memory + plugin ctx    │
+     │   ONLY into the current user message, never        │
+     │   into the cached system prompt)                   │
+     ├─ apply Anthropic cache_control on system + last 3  │
+     ├─ sanitize_api_messages (orphaned tool_calls)       │
+     ├─ drop thinking-only assistant turns                │
+     ├─ normalize whitespace + sort tool_call JSON keys   │
+     ├─ build_kwargs via ProviderTransport                │
+     ├─ apply_llm_request_middleware + pre_api_request    │
+     │   plugin hook                                      │
+     ├─ _interruptible_api_call (streaming or non-stream) │
+     ├─ classify_api_error → retry / fallback / compress  │
+     │                                                     │
+     ├─ normalize_response → NormalizedResponse           │
+     ├─ map finish_reason ("stop", "tool_calls",          │
+     │   "length", "content_filter")                      │
+     │                                                     │
+     ├─ if finish_reason == "length" → continuation       │
+     ├─ if tool_calls present:                            │
+     │     validate tool name → repair / synthetic result │
+     │     validate JSON args → retry up to 3x            │
+     │     _cap_delegate_task_calls + _deduplicate        │
+     │     _execute_tool_calls (concurrent if safe)       │
+     │        ├─ per-call middleware + plugin block        │
+     │        ├─ tool_guardrails.before_call               │
+     │        ├─ checkpoint (write_file/patch/terminal)    │
+     │        ├─ thread-pool dispatch + ContextVar prop    │
+     │        └─ post-call result classification           │
+     │                                                     │
+     └─ else (text response) → break ───────────────────  │
+                                                           │
+  LOOP END ───────────────────────────────────────────────┘
+     ↓
+  finalize_turn (turn_finalizer.py)
+     ├─ if budget exhausted: extra toolless call for summary
+     ├─ persist session (SQLite)
+     ├─ save_trajectory (optional JSONL)
+     ├─ memory sync_all + queue prefetch
+     └─ background memory/skill review trigger
+     ↓
+  return {final_response, messages, api_calls, completed, ...}
+
+  3. Prompt Control: Three-Tier System Prompt
+
+  agent/system_prompt.py builds the prompt once per session and caches it on agent._cached_system_prompt — critically, the system prompt is never re-rendered mid-session. This is the invariant that lets upstream
+  KV/prompt caches stay warm (Anthropic's prefix cache, OpenRouter cache_control, llama.cpp KV reuse).
+
+  Stable tier (cache-friendly, byte-stable for the session)
+
+  - Identity (SOUL.md from HERMES_HOME or DEFAULT_AGENT_IDENTITY constant)
+  - HERMES_AGENT_HELP_GUIDANCE (points to docs)
+  - TASK_COMPLETION_GUIDANCE (universal "finish the job" rule)
+  - Tool-aware guidance (MEMORY_GUIDANCE, SESSION_SEARCH_GUIDANCE, SKILLS_GUIDANCE, KANBAN_GUIDANCE, COMPUTER_USE_GUIDANCE) — gated on valid_tool_names
+  - STEER_CHANNEL_NOTE — instructs model to trust the bounded out-of-band marker
+  - Nous subscription block + tool-use enforcement (TOOL_USE_ENFORCEMENT_GUIDANCE) — model-family gated (gpt, codex, gemini, gemma, grok, glm, qwen, deepseek)
+  - Model-family operational guidance (OPENAI_MODEL_EXECUTION_GUIDANCE for GPT/Codex/Grok, GOOGLE_MODEL_OPERATIONAL_GUIDANCE for Gemini)
+  - Skills index (two-layer cache: in-process LRU + disk snapshot keyed by mtime/size manifest)
+  - Environment hints (host OS, cwd, remote-backend probe for docker/modal/ssh, WSL, Termux)
+  - Coding posture blocks (live git/workspace snapshot, frozen at session start)
+  - Python environment probe (only when non-default)
+  - Active profile hint
+  - Platform hint (whatsapp, slack, discord, ...)
+
+  Context tier (cwd-dependent)
+
+  - Caller-supplied system_message
+  - Context files discovered under TERMINAL_CWD: .cybernetics.md, CYBERNETICS.md, AGENTS.md, .cursorrules, CLAUDE.md — scanned for prompt injection via tools/threat_patterns.py before injection
+
+  Volatile tier (rebuilt only on compression)
+
+  - Memory snapshot (MEMORY.md)
+  - USER.md profile
+  - External memory provider block
+  - Date-only timestamp (intentionally not minute-precision, to keep bytes stable across the day — issue #20451)
+
+  Ephemeral injection (never reaches the cached prompt)
+
+  - ephemeral_system_prompt is appended at API-call time only
+  - Plugin context from pre_llm_call hooks is injected into the user message, not the system prompt
+  - External-memory prefetch is fenced inside <memory-context> tags and injected into the user message (with a streaming scrubber to prevent leakage in the response)
+
+  4. Context Window Management
+
+  Preflight compression (turn_context.py:248-314)
+
+  Before sending, rough token estimate (estimate_request_tokens_rough including tools schema) is compared to compressor.threshold_tokens (default max(context_length × 0.50, MINIMUM_CONTEXT_LENGTH)). Deferred when last
+  real provider prompt_tokens fit under threshold.
+
+  Compression algorithm (ContextCompressor.compress, context_compressor.py:2106)
+
+  1. Pre-pass (cheap, no LLM call): _prune_old_tool_results replaces old tool results with 1-line summaries like [terminal] ran 'npm test' -> exit 0, 47 lines, dedupes identical reads, truncates large tool_call args.
+  2. Protect head (protect_first_n=3, typically system + first user/assistant exchange).
+  3. Find tail boundary by token budget (tail_token_budget = threshold × summary_target_ratio, ~20K tokens) — recent context.
+  4. Summarize middle via auxiliary model with a structured template:
+    - ## Active Task (the SINGLE most important field, verbatim quote of user's last unfulfilled input)
+    - ## Goal, ## Constraints, ## Completed Actions (numbered with tool + outcome), ## Active State, ## Historical In-Progress, ## Blocked, ## Key Decisions, ## Resolved Questions, ## Historical Pending Asks, ## Relevant
+   Files, ## Historical Remaining Work, ## Critical Context
+    - Temporal anchoring directive: completed actions phrased as dated past-tense
+    - Secrets explicitly redacted to [REDACTED]
+  5. Iterative updates: stores _previous_summary so next compression updates rather than re-summarizing from scratch.
+  6. Anti-thrashing: if last 2 compressions saved <10%, refuses to compress (asks user to /new or /compress <topic>).
+  7. Failure modes: configurable — either abort (abort_on_summary_failure=True) or insert deterministic fallback summary listing tool calls + paths.
+  8. Image stripping: replaces base64 image parts in compressed messages with placeholders.
+  9. Role-alternation guard: summary inserted with role chosen to avoid consecutive same-role; merged into tail message if both choices collide.
+  10. End marker: --- END OF CONTEXT SUMMARY — respond to the message below, not the summary above --- appended to prevent regurgitation (#11475, #14521, #33256).
+
+  Special prefixes
+
+  SUMMARY_PREFIX is a long carefully-worded preamble telling the model the summary is reference only, that the latest user message wins on any topic overlap, and that reverse signals ("stop", "undo") must terminate
+  in-flight work. Multiple historical prefixes are tracked so legacy summaries can be re-normalized.
+
+  5. Provider Adapters
+
+  agent/transports/ defines a ProviderTransport ABC with four methods (convert_messages, convert_tools, build_kwargs, normalize_response). Registered transports:
+  - anthropic_messages (Anthropic Messages API — adaptive thinking, signed thinking blocks, native cache_control)
+  - codex_responses (OpenAI Responses API — call_id + response_item_id per tool call)
+  - chat_completions (OpenAI-compatible — covers OpenRouter, vLLM, Ollama, llama.cpp, Mistral, Fireworks, Moonshot, GLM, DeepSeek, Kimi)
+  - bedrock
+
+  All responses normalize to NormalizedResponse(content, tool_calls, finish_reason, reasoning, usage, provider_data). Protocol-specific state (Codex call_id, Gemini thought_signature, Anthropic reasoning_details +
+  interleaved content blocks) lives in provider_data dicts and is accessed via @property shims for back-compat with the 45+ sites that read tc.function.name.
+
+  The AIAgent retains client construction, streaming, credential refresh, prompt caching, interrupt handling, and retry logic.
+
+  6. Tool Execution Pipeline
+
+  execute_tool_calls_concurrent (tool_executor.py:243):
+  1. Interrupt check — cancel all if requested.
+  2. Parse args + unwrap tool_call bridge (Tool Search dispatches the underlying tool directly with session-scope enforcement at this layer).
+  3. Request middleware + plugin pre-tool-call block + ToolGuardrails.before_call decision.
+  4. Checkpoint preflight (snapshot before write_file/patch or destructive terminal commands).
+  5. Concurrent dispatch via thread pool; each worker registers its TID so interrupt() can fan out, propagates ContextVars (#13617 GHSA fix), and sets thread-local activity callback for heartbeats.
+  6. Result classification: file-mutation verifier records success/failure; _apply_pending_steer_to_tool_results appends /steer text to the last tool message.
+
+  ToolGuardrails (tool_guardrails.py) is pure (no side effects) and tracks: exact-failure repeats, same-tool-failure repeats, no-progress on idempotent tools. Defaults are warning-only; circuit-breaker is opt-in.
+
+  7. Resilience Features
+
+  - Iteration budget (IterationBudget) with one grace call after exhaustion
+  - Sanitization passes: surrogates, non-ASCII, _repair_tool_call_arguments, _repair_message_sequence (role alternation)
+  - Empty-content retry with thinking-prefill recovery
+  - Length-finish continuation prompts distinguishing partial-stream-stub from natural truncation
+  - Fallback provider chain activates eagerly on 429/billing errors (with pool-rotation exception)
+  - Rate-limit cross-session guard for Nous Portal (file-based)
+  - Stale-connection cleanup + keepalive HTTP client
+  - Per-thread interrupt with explicit signal pending state
+  - Checkpoint manager for snapshots before destructive operations
+  - Prompt-injection blocks in context files via shared threat_patterns.py
+
+  ---
+  Pros
+
+  1. Cache-Conscious Prompt Design
+
+  The three-tier (stable/context/volatile) split with date-only timestamps, normalized whitespace, and sorted tool_call JSON keys is unusually disciplined. Anthropic's prefix cache + OpenRouter cache_control +
+  local-server KV reuse all benefit. This is a measurable cost reduction (~75% input-token savings claimed on multi-turn).
+
+  2. Defense in Depth Against Prompt Injection
+
+  Four distinct mitigations: (a) context-file scanner using shared threat_patterns.py, (b) bounded [OUT-OF-BAND USER MESSAGE] marker with STEER_CHANNEL_NOTE telling the model to trust ONLY this exact marker, (c)
+  <memory-context> fence tags + streaming scrubber to prevent leakage, (d) secret redaction in summary outputs (LLM may ignore prompt instructions and echo secrets).
+
+  3. Sophisticated Compression
+
+  The structured summary template (Active Task as primary field, Historical/Pending sections framed as "stale", explicit reverse-signal handling, end markers, iterative updates) shows production scarring from many
+  specific failure modes (issues cited inline: #11475, #14521, #33256, #38788, #40803, #41607). Anti-thrashing + cooldown + deterministic fallback prevent runaway loops.
+
+  4. Provider Portability via Clean Abstraction
+
+  ProviderTransport ABC with NormalizedResponse + provider_data dict pattern is well-designed: the shared surface stays minimal, protocol-specific state has a clear home, and back-compat shims preserve the 45+ existing
+  call sites.
+
+  5. Granular Failure Recovery
+
+  Distinct retry counters for invalid tool names, invalid JSON args, empty content, incomplete scratchpad, thinking prefill, codex incomplete — each with bounded retries and tailored recovery (synthetic tool results vs
+  continuation prompts vs prefill). Far more graceful than monolithic exception handling.
+
+  6. Hot-Path Observability
+
+  Plugin hooks (pre_llm_call, pre_api_request, pre_tool_call_block, on_session_start, etc.), step callbacks for gateway streaming, activity touches for heartbeats — all wired without polluting the core loop too badly.
+  Langfuse plugin is a real customer.
+
+  7. Multi-Surface Support
+
+  One agent runs CLI, TUI, gateway daemon, kanban worker, MCP server, ACP adapter, desktop GUI, web. The plumbing (TERMINAL_CWD, platform key, session_id, parent_session_id) was clearly designed for this from day one.
+
+  8. Security-Aware Tool Execution
+
+  Checkpoints before destructive operations; per-thread interrupt fan-out; ContextVar propagation (#13617 fixed a real concurrency vulnerability); webhook-safe toolset constraint; cross-profile write guard; sandbox-aware
+   environment hints.
+
+  ---
+  Cons
+
+  1. Severe Monolithic Files Despite Decomposition
+
+  run_agent.py is still 239KB / ~5,400 LOC with a single AIAgent class and 200+ methods. conversation_loop.py:run_conversation is ~5,400 lines (file is 241KB). context_compressor.py is 113KB. cli.py is 637KB (13,933 LOC)
+   — extreme. Reading order is dictated by knowing the symbol name; cognitive load to onboard is very high.
+
+  2. Mutating-agent-as-State-Container Pattern
+
+  build_turn_context mutates agent._invalid_tool_retries, agent._invalid_json_retries, agent._empty_content_retries, agent._incomplete_scratchpad_retries, ..., agent.iteration_budget, agent._cached_system_prompt,
+  agent._execution_thread_id, etc. — 30+ side effects per turn. Tests that don't reset all of them silently leak state. The "extracted to module but still mutates agent" refactor pattern is everywhere.
+
+  3. Heavy Use of _ra() Indirection for Test Patchability
+
+  agent/conversation_loop.py:118 _ra() and agent/system_prompt.py:66 _ra() exist so that mock.patch("run_agent.X") keeps working after extraction. This is honest pragmatism, but it creates a "patch contract" that future
+  refactors can't see — touching run_agent's namespace is now an API change.
+
+  4. Provider-Specific Special Cases Bleed Everywhere
+
+  The conversation loop has explicit branches for: Anthropic long-context tier reduction, Nous Portal rate-limit cross-session guard, GitHub Models 8K cap, Azure content filter language, OpenRouter cache headers, Alibaba
+   glm-4.7 model-name workaround, Moonshot reasoning_content field, Kimi/DeepSeek/MiMo "require-side" reasoning replay, Mistral strict-field stripping. The ProviderTransport abstraction doesn't fully contain provider
+  quirks — the loop knows about all of them.
+
+  5. System Prompt is Caller-Implicit
+
+  The prompt is built from agent.valid_tool_names, agent.platform, agent.model, agent.provider, os.environ["TERMINAL_CWD"], os.environ["HERMES_KANBAN_TASK"], os.environ["HERMES_PLATFORM"], os.environ["HERMES_DESKTOP"],
+  os.environ["HERMES_DESKTOP_TERMINAL"], os.environ["HERMES_ENVIRONMENT_HINT"], config.yaml entries... A dev cannot easily predict what the model will see without running it. There's no dump_prompt --explain
+  introspection (or it's not surfaced).
+
+  6. Compression is High-Stakes But Best-Effort
+
+  Single auxiliary-model failure means the entire middle window can be replaced with a deterministic "summary unavailable" placeholder that loses most context. The fallback summary lists tool calls + paths but not
+  decisions or content. Some configurations abort entirely, freezing the session. Either outcome is bad UX if the auxiliary provider is flaky.
+
+  7. Stable Tier Can Be Very Heavy
+
+  For a default coding session with skills enabled: SOUL.md + ~6 guidance blocks + skills index (potentially hundreds of skills with descriptions) + environment hints + coding context blocks + profile hint = often 8-15K
+  tokens before any conversation starts. Combined with tool schemas (~3-5K tokens for the full Cybernetics tool set), the floor is large. The GitHub Models 8K cap message admits this directly.
+
+  8. Tight Coupling Between "Layers"
+
+  agent/conversation_loop.py imports from agent.codex_responses_adapter, agent.bedrock_adapter, agent.anthropic_adapter, agent.transports.*, plus tools.*, hermes_cli.*, gateway.*, plugins.*. There's no clean stack — each
+   "extracted" module re-couples back. The god-file decomposition plan in the repo is honest about being a work in progress.
+
+  9. Streaming + Tool Calls + Reasoning is Brittle
+
+  Special handling for: think-block scrubber, memory-context scrubber, thinking-only assistant turns dropped before API send, signed thinking block replay for Anthropic, Gemini thought_signature replay, Codex reasoning
+  items round-trip. Each provider's reasoning surface is bespoke. Several issues cited inline acknowledge silent failure modes here.
+
+  10. Memory Provider Restriction is a Footgun
+
+  Only ONE external memory provider allowed at a time (memory_manager.py:8). The single-provider rule is defensible (tool schema bloat, conflicting backends) but the rejection-with-warning means second registration
+  silently no-ops — easy to miss.
+
+  11. Date-Only Timestamp Trades Off Recency
+
+  The cache stability win (date-only) means the model has no minute-precision clock from the prompt. The mitigation ("query the exact wall-clock time via tools when it actually needs it") relies on the model remembering
+  to do so. Some models will hallucinate the time.
+
+  12. Compression Summary as "user" or "assistant" Role
+
+  Inserting the summary as either role has known regression modes (#11475 user-role, #33256 assistant-role) that required adding the end marker as a workaround. The merge-into-tail fallback is even more fragile — it
+  prepends a multi-thousand-token blob to whatever the next message contains. Models occasionally read this as if the user wrote the summary.
+
+  ---
+  Bottom Line
+
+  The architecture is production-hardened with visible scar tissue from many real incidents — the codebase is unusually honest about its failure modes (issue numbers, "burned by", "wedged" comments throughout). The
+  prompt/context control is sophisticated: caching is taken seriously, prompt-injection defense has multiple layers, compression has a thoughtful structured template, and provider portability is well-abstracted at the
+  transport seam.
+
+  The major structural cost is monolithic god-files and pervasive mutation of agent-as-state-container, which makes the system hard to reason about top-down. Extracted modules still pull state from agent and patch back
+  through _ra() for tests — the "refactor" has flattened the call graph without genuinely decoupling.
+
+  If you're evaluating this for adoption: the agent loop, prompt assembly, and compression strategy are worth studying as reference designs. The provider transport abstraction is clean. The internal coupling and file
+  sizes are the price of a feature surface this large; budget significant onboarding time.
+
+⏺ Report delivered: maps the full per-turn data flow (turn_context → conversation_loop → tool_executor → turn_finalizer), the three-tier prompt cache strategy (stable/context/volatile) in agent/system_prompt.py, the
+  structured-template compression in agent/context_compressor.py:2106, the ProviderTransport abstraction in agent/transports/, with pros (cache discipline, injection defense, granular failure recovery, multi-surface
+  support) and cons (massive god-files, agent-as-state-container mutation, provider-specific bleed-through into the loop, heavy stable-tier baseline).
